@@ -4,46 +4,64 @@ import { createHarbor } from './core.js';
 export const name = 'starharbor';
 export const inject = ['connection', 'tools', 'workingDirectory'];
 
+// Translate the repository description without turning README banners into a summary.
+export async function translateDescription(repo, translator, lifecycleSignal) {
+  if (!repo.description) return {};
+  if (/[\u4e00-\u9fff]/.test(repo.description)) return { summaryZh: repo.description, summary: repo.description, summarySource: 'original' };
+  if (!translator) return {};
+  const signal = AbortSignal.any([lifecycleSignal, AbortSignal.timeout(12000)]);
+  const providers = await translator.availableProviders(signal);
+  const provider = providers.find(p => p === 'google' || p === 'bing');
+  if (!provider) return {};
+  const translated = await translator.translate(translator.resolve({ text: repo.description, targetLanguage: 'zh-CN', provider }), signal);
+  if (typeof translated !== 'string' || !translated.trim()) return {};
+  return { summaryZh: translated.trim(), summary: translated.trim(), summarySource: 'translated_description' };
+}
+
 // One application boundary shared by the authenticated UI and the agent tool.
 export function apply(ctx, config = {}) {
   const dataDir = path.resolve(config.dataDir || process.env.STARHARBOR_DIR || path.join(ctx.workingDirectory.defaultDirectory, 'StarHarbor'));
   const abort = new AbortController();
-  const harbor = createHarbor({ dataDir, enrich: async repo => {
-    const translator = ctx.get('translator');
-    if (!translator || !repo.description || /[\u4e00-\u9fff]/.test(repo.description)) return {};
-    const providers = await translator.availableProviders(abort.signal);
-    const provider = providers.find(p => p === 'google' || p === 'bing');
-    if (!provider) return {};
-    const translated = await translator.translate(translator.resolve({ text: repo.description, targetLanguage: 'zh-CN', provider }), AbortSignal.any([abort.signal, AbortSignal.timeout(12000)]));
-    const excerpt = repo.readmeExcerpt?.slice(0, 500);
-    const extra = excerpt ? await translator.translate(translator.resolve({ text: excerpt, targetLanguage: 'zh-CN', provider }), AbortSignal.any([abort.signal, AbortSignal.timeout(12000)])) : '';
-    const sentences = extra.match(/[^。！？.!?]+[。！？.!?]?/g)?.slice(0, 2).join('').slice(0, 320) || '';
-    return { summary: `${translated}${sentences ? `\n${sentences}` : ''}`, summarySource: 'GitHub description + README excerpt · translated' };
-  } });
+  const harbor = createHarbor({ dataDir, signal: abort.signal, enrich: repo => translateDescription(repo, ctx.get('translator'), abort.signal) });
   async function operate(input) {
-    if (!input || typeof input !== 'object') throw new Error('Expected an action object');
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw Object.assign(new Error('Expected an action object'), { code: 'invalid_request' });
     switch (input.action) {
       case 'status': return harbor.status();
       case 'refresh': return harbor.refresh({ force: Boolean(input.force) });
       case 'save': {
-        if (!Number.isSafeInteger(input.id) || input.id < 1) throw new Error('A positive repository id is required');
-        const receipt = await harbor.save(input.id);
+        if (!Number.isSafeInteger(input.id) || input.id < 1) throw Object.assign(new Error('A positive repository id is required'), { code: 'invalid_id' });
+        let receipt;
+        try { receipt = await harbor.save(input.id); }
+        catch (error) {
+          if (!error.code && /已有推荐/.test(error.message)) error.code = 'not_recommended';
+          throw error;
+        }
         return { ...(await harbor.status()), receipt };
       }
-      case 'settings': return harbor.settings(input.settings || {});
-      default: throw new Error('Unknown StarHarbor action');
+      case 'settings': {
+        try { return await harbor.settings(input.settings || {}); }
+        catch (error) {
+          if (error instanceof TypeError || error instanceof RangeError) error.code = 'invalid_settings';
+          throw error;
+        }
+      }
+      default: throw Object.assign(new Error('Unknown StarHarbor action'), { code: 'invalid_request' });
     }
   }
   ctx.effect(() => ctx.connection.fetch.register({
     path: '/api/starharbor', methods: ['GET', 'POST'], requestBody: 'buffered',
     fetch: async request => {
       try {
-        if (request.method === 'POST' && request.headers.get('x-starharbor') !== '1') return Response.json({ error: 'Missing application header' }, { status: 403 });
+        if (request.method === 'POST' && request.headers.get('x-starharbor') !== '1') return Response.json({ error: 'Missing application header', code: 'access_denied' }, { status: 403, headers: { 'Cache-Control': 'no-store' } });
         const text = request.method === 'POST' ? await request.text() : '';
-        if (text.length > 8192) return Response.json({ error: 'Request too large' }, { status: 413 });
+        if (text.length > 8192) return Response.json({ error: 'Request too large', code: 'invalid_request' }, { status: 413, headers: { 'Cache-Control': 'no-store' } });
         const result = await operate(request.method === 'GET' ? { action: 'status' } : JSON.parse(text));
         return Response.json(result, { headers: { 'Cache-Control': 'no-store' } });
-      } catch (error) { return Response.json({ error: error.message }, { status: 400, headers: { 'Cache-Control': 'no-store' } }); }
+      } catch (error) {
+        const allowed = ['invalid_request', 'invalid_id', 'invalid_settings', 'not_recommended'];
+        const code = error instanceof SyntaxError ? 'invalid_request' : allowed.includes(error.code) ? error.code : 'request_failed';
+        return Response.json({ error: error.message, code }, { status: code === 'request_failed' ? 500 : 400, headers: { 'Cache-Control': 'no-store' } });
+      }
     },
   }));
   ctx.effect(() => ctx.tools.register({

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { getEventListeners } from 'node:events';
 import { createHarbor } from '../core.js';
 
 const meta = (id, name, stars, description, language = 'JavaScript') => ({ id, full_name: `demo/${name}`, stargazers_count: stars, description, language, fork: false, archived: false, pushed_at: '2026-10-01T00:00:00Z' });
@@ -251,6 +252,208 @@ test('optional enrich receives README excerpt and can change summary; failures r
   assert.match(seen[0].readmeExcerpt, /Build useful things/);
   assert.ok(!seen[0].readmeExcerpt.includes('badge'));
   assert.equal(result.today.repos[0].summarySource, 'translated');
+  assert.equal(result.today.repos[0].summaryZh, '用于构建实用工具的开源项目。');
   assert.equal(result.today.repos[1].summarySource, 'original');
   assert.match(result.today.repos[1].summary, /原文未翻译/);
+});
+
+test('summaryZh is accepted independently and enrichment cannot change purpose categories', async t => {
+  const { harbor } = await setup(t, { enrich: async () => ({ summary: ' ', summaryZh: '  真实描述的中文翻译。  ', category: '任意名称', categoryId: 'resources' }) });
+  const result = await harbor.refresh();
+  const ai = result.today.repos.find(repo => repo.id === 11);
+  assert.equal(ai.categoryId, 'ai');
+  assert.equal(ai.category, '人工智能');
+  assert.equal(ai.language, 'JavaScript');
+  assert.equal(ai.summaryZh, '真实描述的中文翻译。');
+  assert.equal(ai.summarySource, 'original');
+  assert.match(ai.summary, /原文未翻译/);
+  assert.equal(ai.sourceCode, 'classic');
+  assert.equal(ai.reasonCode, 'classic');
+});
+
+test('legacy projection is read-only and preserves existing Markdown, categories and same-day board', async t => {
+  const { harbor, dataDir, calls } = await setup(t);
+  const initial = await harbor.refresh();
+  const stateFile = path.join(dataDir, 'state.json');
+  const raw = JSON.parse(await fs.readFile(stateFile, 'utf8'));
+  const legacy = { ...raw.today.repos[0], category: '用户原分类' };
+  for (const key of ['categoryId', 'language', 'sourceCode', 'reasonCode', 'summaryZh']) delete legacy[key];
+  raw.today.repos[0] = legacy;
+  raw.history[0] = structuredClone(raw.today);
+  delete raw.today.warningDetails;
+  delete raw.history[0].warningDetails;
+  for (const board of [raw.today, raw.history[0]]) for (const leader of Object.values(board.leaders)) delete leader.labelCode;
+  raw.saved = [{ ...legacy, savedAt: initial.today.generatedAt }];
+  const before = JSON.stringify(raw);
+  await fs.writeFile(stateFile, before);
+  const markdown = '# 手写收藏\n\n## 用户原分类\n\n这段不应修改。\n';
+  await fs.writeFile(path.join(dataDir, 'GitHub收藏.md'), markdown);
+  const count = calls.length;
+  const projected = await harbor.refresh();
+  assert.equal(calls.length, count);
+  assert.equal(projected.today.generatedAt, initial.today.generatedAt);
+  assert.equal(projected.today.repos[0].category, '用户原分类');
+  assert.equal(projected.saved[0].category, '用户原分类');
+  assert.equal(projected.today.repos[0].categoryId, 'general');
+  assert.equal(projected.today.repos[0].sourceCode, 'trending_daily');
+  assert.equal(projected.today.warningDetails[0].code, 'growth_unavailable');
+  assert.equal(await fs.readFile(stateFile, 'utf8'), before);
+  assert.equal(await fs.readFile(path.join(dataDir, 'GitHub收藏.md'), 'utf8'), markdown);
+});
+
+test('classic search uses the configured threshold and settings reject inherited property names', async t => {
+  const { harbor, calls } = await setup(t);
+  await assert.rejects(harbor.settings({ constructor: 1 }), /未知设置/);
+  await harbor.settings({ classicMin: 15000 });
+  await harbor.refresh();
+  assert.match(calls.find(call => call.url.includes('/search/')).url, /stars:%3E%3D15000\+/);
+});
+
+test('a batch ending outside the midnight window retains earlier valid per-repository observations', async t => {
+  const fixture = await setup(t);
+  let time = new Date('2026-11-17T23:59:00+08:00');
+  const harbor = createHarbor({ dataDir: fixture.dataDir, now: () => time, fetchImpl: async url => {
+    if (url.includes('/trending')) return new Response(html([classics[0], daily[0]]));
+    if (url.includes('/search/')) return Response.json({ items: [classics[0]] });
+    time = new Date('2026-11-18T00:06:00+08:00');
+    return Response.json(daily[0]);
+  } });
+  await harbor.refresh({ snapshotOnly: true });
+  const raw = JSON.parse(await fs.readFile(path.join(fixture.dataDir, 'state.json'), 'utf8'));
+  assert.equal(raw.snapshots.length, 1);
+  assert.equal(raw.snapshots[0].date, '2026-11-18');
+  assert.equal(raw.snapshots[0].stars[11], classics[0].stargazers_count);
+  assert.equal(raw.snapshots[0].observedAtByRepo[11], '2026-11-17T15:59:00.000Z');
+  assert.equal(raw.snapshots[0].stars[1], undefined);
+});
+
+test('midnight sampling accepts exactly plus/minus five minutes and rejects the adjacent millisecond', async t => {
+  const boundary = Date.parse('2026-11-18T00:00:00+08:00');
+  for (const delta of [-300001, -300000, 300000, 300001]) {
+    const fixture = await setup(t);
+    const harbor = createHarbor({ dataDir: fixture.dataDir, now: () => new Date(boundary + delta), fetchImpl: fixture.fetchImpl });
+    await harbor.refresh({ snapshotOnly: true });
+    const raw = JSON.parse(await fs.readFile(path.join(fixture.dataDir, 'state.json'), 'utf8'));
+    assert.equal(raw.snapshots.length, Math.abs(delta) <= 300000 ? 1 : 0, String(delta));
+    if (raw.snapshots.length) assert.equal(raw.snapshots[0].date, '2026-11-18');
+  }
+});
+
+test('closer partial snapshots merge by repository and keep other repositories and legacy endpoints', async t => {
+  const fixture = await setup(t);
+  let time = new Date('2026-11-17T00:03:00+08:00');
+  let partial = false;
+  const stateFile = path.join(fixture.dataDir, 'state.json');
+  await fs.writeFile(stateFile, JSON.stringify({ snapshots: [{ date: '2026-11-16', observedAt: '2026-11-15T16:00:00.000Z', stars: { 11: 119000 } }] }));
+  const harbor = createHarbor({ dataDir: fixture.dataDir, now: () => time, fetchImpl: async (url, init) => {
+    if (!partial) return fixture.fetchImpl(url, init);
+    if (url.includes('/trending')) return new Response(html([classics[0]]));
+    return Response.json({ items: [{ ...classics[0], stargazers_count: 120123 }] });
+  } });
+  await harbor.refresh({ snapshotOnly: true });
+  partial = true;
+  time = new Date('2026-11-17T00:01:00+08:00');
+  await harbor.refresh({ snapshotOnly: true });
+  let raw = JSON.parse(await fs.readFile(stateFile, 'utf8'));
+  const snapshot = raw.snapshots.find(item => item.date === '2026-11-17');
+  assert.equal(snapshot.stars[11], 120123);
+  assert.equal(snapshot.stars[13], classics[2].stargazers_count);
+  assert.equal(snapshot.observedAtByRepo[11], '2026-11-16T16:01:00.000Z');
+  assert.equal(snapshot.observedAtByRepo[13], '2026-11-16T16:03:00.000Z');
+  // A farther observation must not overwrite the closer count.
+  time = new Date('2026-11-17T00:04:00+08:00');
+  partial = false;
+  await harbor.refresh({ snapshotOnly: true });
+  raw = JSON.parse(await fs.readFile(stateFile, 'utf8'));
+  assert.equal(raw.snapshots.find(item => item.date === '2026-11-17').stars[11], 120123);
+  time = new Date('2026-11-17T09:00:00+08:00');
+  const status = await harbor.refresh();
+  assert.equal(status.today.leaders.daily.repo.id, 11);
+  assert.equal(status.today.leaders.daily.repo.dailyGain, 1123);
+  assert.equal(status.today.leaders.daily.labelCode, 'daily_gain');
+});
+
+test('HTTP failures have stable structured details without losing legacy messages', async t => {
+  const { harbor, fail } = await setup(t);
+  fail();
+  const result = await harbor.refresh();
+  assert.equal(result.lastError.code, 'collection_failed');
+  assert.equal(result.lastError.httpStatus, 429);
+  assert.equal(result.lastError.details[0].code, 'source_failed');
+  assert.equal(result.lastError.details[0].params.source, 'trending_daily');
+  assert.equal(result.lastError.details[0].params.httpStatus, 429);
+  assert.ok(result.today.warningDetails.some(item => item.code === 'source_failed'));
+  assert.ok(result.today.warningDetails.some(item => item.code === 'recommendation_shortage'));
+  assert.match(result.lastError.message, /429/);
+});
+
+test('refresh has a total deadline even when fetch ignores cancellation', async t => {
+  let calls = 0;
+  const { harbor } = await setup(t, { refreshTimeoutMs: 40, fetchImpl: () => { calls++; return new Promise(() => {}); } });
+  const started = Date.now();
+  const result = await harbor.refresh();
+  assert.ok(Date.now() - started < 2000);
+  assert.equal(calls, 3);
+  assert.equal(result.lastError.code, 'refresh_timeout');
+  assert.equal(result.history.length, 0);
+  assert.ok(result.lastError.details.some(item => item.code === 'refresh_timeout'));
+});
+
+test('hanging enrichment is bounded and late results cannot mutate persisted recommendations', async t => {
+  let finish;
+  let count = 0;
+  const { harbor, dataDir, calls } = await setup(t, { refreshTimeoutMs: 100, enrich: () => { count++; return new Promise(resolve => { finish = resolve; }); } });
+  const result = await harbor.refresh();
+  assert.equal(count, 1);
+  assert.equal(result.lastError.code, 'refresh_timeout');
+  assert.equal(result.history.length, 0);
+  const before = await fs.readFile(path.join(dataDir, 'state.json'), 'utf8');
+  const requestCount = calls.length;
+  finish({ summary: 'late changed text', summaryZh: '迟到的翻译' });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(calls.length, requestCount);
+  assert.equal(await fs.readFile(path.join(dataDir, 'state.json'), 'utf8'), before);
+  assert.match((await harbor.status()).today.repos[0].summary, /原文未翻译/);
+});
+
+test('disposal cancels ignored fetches and queued refreshes without overwriting existing state', async t => {
+  const fixture = await setup(t);
+  await fixture.harbor.refresh();
+  const stateFile = path.join(fixture.dataDir, 'state.json');
+  const before = await fs.readFile(stateFile, 'utf8');
+  const controller = new AbortController();
+  let begin;
+  const started = new Promise(resolve => { begin = resolve; });
+  let calls = 0;
+  const harbor = createHarbor({ dataDir: fixture.dataDir, signal: controller.signal, now: () => new Date('2026-11-18T00:00:00+08:00'), fetchImpl: () => { calls++; begin(); return new Promise(() => {}); } });
+  const snapshot = harbor.refresh({ snapshotOnly: true });
+  const queued = harbor.refresh();
+  const outcomes = Promise.allSettled([snapshot, queued]);
+  await started;
+  controller.abort(new Error('plugin disposed'));
+  const settled = await outcomes;
+  assert.ok(settled.every(item => item.status === 'rejected' && /plugin disposed/.test(item.reason.message)));
+  assert.equal(calls, 3);
+  assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
+  assert.equal(await fs.readFile(stateFile, 'utf8'), before);
+  await assert.rejects(harbor.refresh(), /plugin disposed/);
+  assert.equal(calls, 3);
+});
+
+test('disposal cancels hanging enrichment and ignores its later result', async t => {
+  const controller = new AbortController();
+  let begin;
+  let finish;
+  const started = new Promise(resolve => { begin = resolve; });
+  const { harbor, dataDir } = await setup(t, { signal: controller.signal, enrich: () => { begin(); return new Promise(resolve => { finish = resolve; }); } });
+  const pending = harbor.refresh();
+  const rejected = assert.rejects(pending, /plugin disposed/);
+  await started;
+  controller.abort(new Error('plugin disposed'));
+  await rejected;
+  finish({ summaryZh: '迟到结果不应写入' });
+  await Promise.resolve();
+  assert.equal(getEventListeners(controller.signal, 'abort').length, 0);
+  await assert.rejects(fs.readFile(path.join(dataDir, 'state.json'), 'utf8'), { code: 'ENOENT' });
 });
