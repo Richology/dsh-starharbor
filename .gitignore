@@ -1,0 +1,8 @@
+node_modules/
+.npm-cache/
+StarHarbor/
+*.tgz
+.DS_Store
+.env
+.env.*
+coverage/

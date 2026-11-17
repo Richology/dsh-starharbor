@@ -1,0 +1,14 @@
+{
+  "name": "dsh-starharbor",
+  "version": "0.1.0",
+  "description": "StarHarbor 星港 · Daily GitHub discoveries and Markdown collections for DSH",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22", "dsh": ">=0.2.2-rc.1 <0.3.0" },
+  "repository": { "type": "git", "url": "https://github.com/Richology/dsh-starharbor.git" },
+  "keywords": ["dsh-plugin", "github", "trending", "stars", "markdown"],
+  "exports": { ".": "./index.js", "./client": "./client.js", "./locale/*.json": "./locale/*.json", "./icon": "./icon.svg" },
+  "files": ["index.js", "core.js", "client.js", "cordis.patch.yml", "locale/*.json", "icon.svg", "README.md", "LICENSE"],
+  "scripts": { "test": "node --test", "check": "node --check index.js && node --check core.js && node --check client.js" },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" }, "client": { "platform": "web", "immediately": true, "inject": ["@deepseek-ai/dsh-client-ui-layout"] } }
+}
