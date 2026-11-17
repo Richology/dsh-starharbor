@@ -11,7 +11,7 @@ A DSH sidebar plugin for discovering five high-star GitHub repositories every da
 在 DSH 的插件管理中安装 GitHub 仓库 `https://github.com/Richology/dsh-starharbor`，或使用：
 
 ```sh
-dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.1.0
+dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.1.1
 ```
 
 本地开发版本：
@@ -35,13 +35,13 @@ dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor
 - 排除 fork、归档仓库、已收藏项目；默认 30 天内不重复推荐。同一天不重复仓库。
 - 候选来自 GitHub Trending 近1日/近7日和累计高星搜索；每轮最多核实20个额外 Trending 仓库，以降低匿名限流风险。
 - 门槛、重复间隔和生成时间可在设置修改。极少数时候候选不足会显示实际数量及原因。
-- 功能简介取自仓库描述和 README 摘录。DSH 有匿名翻译服务时翻译为中文；失败时保留原文，并说明来源。分类基于描述、topics 和语言的本地规则，可能需要人工判断。
+- 功能简介取自仓库描述和 README 摘录。DSH 有匿名翻译服务时翻译为中文；失败时保留仓库原文。分类基于描述、topics 和语言的本地规则，可能需要人工判断。
 
 ## Star 数据的边界
 
 **这里展示的是采集候选中的排名，不能证明是全 GitHub 第一。** GitHub Trending 的排序不等于特定自然日的涨星数。刚安装时使用趋势榜推荐，并明确显示趋势来源，不声称昨日或周净增冠军。
 
-插件在北京时间午夜附近采集累计 Star 快照。只有完整端点存在才计算自然日净增（含取消 Star）；最近7天要求连续每日端点存在。当前采样窗口为午夜前后5分钟，属于近似边界采样，并非零误差的午夜交易记录。关机、网络故障、限流、未被采集到的仓库会导致增长数据缺失。界面显示未知，不以零替代。不会购买历史数据或抓取用户的 Star 列表。
+插件在北京时间午夜附近采集累计 Star 快照。只有完整端点存在才计算自然日净增（含取消 Star）；最近7天要求连续每日端点存在。当前采样窗口为午夜前后5分钟，属于近似边界采样，并非零误差的午夜交易记录。关机、网络故障、限流、未被采集到的仓库会导致增长数据缺失。界面统一提示观测数据尚不完整，并省略缺失的净增数值，不以零替代。不会购买历史数据或抓取用户的 Star 列表。
 
 ## 收藏与本地数据
 
