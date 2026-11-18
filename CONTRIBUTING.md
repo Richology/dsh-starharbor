@@ -6,11 +6,12 @@ StarHarbor 是采用 MIT 许可证的 DSH 插件。问题和建议请提交到 [
 
 ## Local development / 本地开发
 
-Use Node.js 22 or later and DSH `>=0.2.2-rc.1 <0.3.0`. The repository uses native ESM and Node’s built-in test runner. There are no third-party runtime dependencies or installation scripts; React comes from DSH.
+Use Node.js 22 or later and DSH `>=0.2.2-rc.1 <0.3.0`. The repository uses native ESM and Node’s built-in test runner. The scoped proxy-aware transport uses pinned Undici; there are no installation scripts, and React comes from DSH.
 
-使用 Node.js 22 或更高版本，以及 DSH `>=0.2.2-rc.1 <0.3.0`。项目采用原生 ESM 和 Node 内置测试运行器，没有第三方运行依赖或安装脚本，React 由 DSH 提供。
+使用 Node.js 22 或更高版本，以及 DSH `>=0.2.2-rc.1 <0.3.0`。项目采用原生 ESM 和 Node 内置测试运行器，作用域内的代理请求使用固定版本 Undici，不运行安装脚本，React 由 DSH 提供。
 
 ```sh
+npm ci --ignore-scripts
 npm run check
 npm test
 npm pack --dry-run

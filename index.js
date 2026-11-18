@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { createHarbor } from './core.js';
+import { createFeedTransport } from './transport.js';
 
 export const name = 'starharbor';
 export const inject = ['connection', 'tools', 'workingDirectory'];
@@ -23,7 +24,8 @@ export async function translateDescription(repo, translator, lifecycleSignal) {
 export function apply(ctx, config = {}) {
   const dataDir = path.resolve(config.dataDir || process.env.STARHARBOR_DIR || path.join(ctx.workingDirectory.defaultDirectory, 'StarHarbor'));
   const abort = new AbortController();
-  const harbor = createHarbor({ dataDir, signal: abort.signal, feedUrl: config.feedUrl || process.env.STARHARBOR_FEED_URL || DEFAULT_FEED_URL });
+  const transport = createFeedTransport();
+  const harbor = createHarbor({ dataDir, signal: abort.signal, fetchImpl: transport.fetch, feedUrl: config.feedUrl || process.env.STARHARBOR_FEED_URL || DEFAULT_FEED_URL });
   async function operate(input) {
     if (!input || typeof input !== 'object' || Array.isArray(input)) throw Object.assign(new Error('Expected an action object'), { code: 'invalid_request' });
     switch (input.action) {
@@ -108,6 +110,6 @@ export function apply(ctx, config = {}) {
     }
     const timer = setInterval(tick, 60000);
     void tick();
-    return () => { clearInterval(timer); abort.abort(); };
+    return () => { clearInterval(timer); abort.abort(); return transport.close(); };
   });
 }

@@ -18,18 +18,18 @@ Captured from the installed v0.3.0 interface after a successful sync with the li
 
 ## Install and get started
 
-Requires DSH `>=0.2.2-rc.1 <0.3.0` and Node.js 22 or later. StarHarbor uses native ESM, has no third-party runtime dependencies, and runs no installation scripts.
+Requires DSH `>=0.2.2-rc.1 <0.3.0` and Node.js 22 or later. StarHarbor uses native ESM and the pinned Undici HTTP client; it runs no installation scripts. Public-feed requests honor standard HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and NO_PROXY variables, with lowercase variants taking precedence. On macOS, manual HTTP/HTTPS system proxies are used when no explicit proxy environment is set, including bypass rules. PAC-only and SOCKS-only system configurations are not automatically resolved; use an HTTP proxy environment variable in those cases. Proxy settings are read locally and never uploaded; the plugin does not modify system or global Node networking.
 
 Install from the pinned GitHub source:
 
 ```sh
-dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.3.1
+dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.3.2
 ```
 
-Or download [dsh-starharbor-0.3.1.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.1/dsh-starharbor-0.3.1.tgz) from the [v0.3.1 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.1), then install the downloaded file:
+Or download [dsh-starharbor-0.3.2.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.2/dsh-starharbor-0.3.2.tgz) from the [v0.3.2 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.2), then install the downloaded file:
 
 ```sh
-dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.3.1.tgz
+dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.3.2.tgz
 ```
 
 Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The npm package is not published and community market inclusion is pending.

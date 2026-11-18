@@ -18,18 +18,18 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐最多 5 个公开 Git
 
 ## 安装与开始使用
 
-需要 DSH `>=0.2.2-rc.1 <0.3.0` 和 Node.js 22 或更高版本。插件使用原生 ESM，没有第三方运行依赖，也不运行安装脚本。
+需要 DSH `>=0.2.2-rc.1 <0.3.0` 和 Node.js 22 或更高版本。插件使用原生 ESM 和固定版本的 Undici HTTP 客户端，不运行安装脚本。公开数据请求遵循 HTTP_PROXY/HTTPS_PROXY/ALL_PROXY 及 NO_PROXY 环境变量，小写同名变量优先；macOS 未设置显式代理环境变量时，会读取手动 HTTP/HTTPS 系统代理及绕过规则。纯 PAC 或纯 SOCKS 系统配置暂不自动解析，可通过 HTTP 代理环境变量配置。代理配置只在本机使用，不上传，也不修改系统设置或 Node 全局网络。
 
 通过固定版本的 GitHub 源码安装：
 
 ```sh
-dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.3.1
+dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.3.2
 ```
 
-也可以从 [v0.3.1 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.1) 下载 [dsh-starharbor-0.3.1.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.1/dsh-starharbor-0.3.1.tgz)，再安装下载的文件：
+也可以从 [v0.3.2 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.2) 下载 [dsh-starharbor-0.3.2.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.2/dsh-starharbor-0.3.2.tgz)，再安装下载的文件：
 
 ```sh
-dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.3.1.tgz
+dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.3.2.tgz
 ```
 
 源码位于 [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor)。npm 包尚未发布，社区市场尚未收录。

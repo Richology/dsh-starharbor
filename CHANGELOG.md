@@ -1,5 +1,13 @@
 # Changelog / 更新记录
 
+## v0.3.2 — 2026-11-18
+
+- Fix repeated local feed timeouts when macOS uses a system HTTP/HTTPS proxy but Node requests connect directly. Use a scoped Undici dispatcher honoring explicit proxy/NO_PROXY environment first, then manual macOS system proxy and bypass rules. Never change the global dispatcher or bypass a selected proxy on failure.
+- Cancel proxy discovery with the request and destroy scoped agents on unload, including a shutdown/discovery race covered by regression.
+- Add 38 independent transport checks; all 132 automated checks pass. The installed DSH panel successfully synchronized the live feed and cleared the previous timeout alert while preserving the fixed daily board and personal collection.
+- 修复系统代理已启用、Node 请求仍直连导致的反复超时。遵循显式代理与 NO_PROXY 环境变量；macOS 无显式环境代理时读取手动 HTTP/HTTPS 系统代理和绕过规则。不改全局代理，不在代理失败时偷偷直连。
+- 修复卸载期间代理发现完成后可能泄漏连接资源的竞态；新增 38 项独立传输测试，全量 132 项通过，并在真实 DSH 中成功同步、清除超时提示，保留原推荐和收藏。
+
 ## v0.3.1 — 2026-11-18
 
 ### Independent QA fixes / 独立测试修复
