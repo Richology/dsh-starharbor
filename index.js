@@ -40,7 +40,7 @@ export function apply(ctx, config = {}) {
         return { ...(await harbor.status()), receipt };
       }
       case 'settings': {
-        try { return await harbor.settings(input.settings || {}); }
+        try { return await harbor.settings(Object.hasOwn(input, 'settings') ? input.settings : {}); }
         catch (error) {
           if (error instanceof TypeError || error instanceof RangeError) error.code = 'invalid_settings';
           throw error;

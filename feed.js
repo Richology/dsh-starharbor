@@ -58,7 +58,7 @@ export function validateFeed(value, { now = new Date() } = {}) {
         result[`${period}Gain`] = null; result[`${period}Interval`] = null;
       } else {
         integer(gain, `${period}Gain`, -Number.MAX_SAFE_INTEGER);
-        if (gain > result.stars) fail(`${period}Gain exceeds current stars`);
+        // A later same-day unstar can put today's total below yesterday's valid net gain.
         object(interval, `${period}Interval`);
         const start = stamp(interval.start, 'interval.start', time + 300000);
         const end = stamp(interval.end, 'interval.end', time + 300000);

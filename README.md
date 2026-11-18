@@ -23,13 +23,13 @@ Requires DSH `>=0.2.2-rc.1 <0.3.0` and Node.js 22 or later. StarHarbor uses nati
 Install from the pinned GitHub source:
 
 ```sh
-dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.3.0
+dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.3.1
 ```
 
-Or download [dsh-starharbor-0.3.0.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.0/dsh-starharbor-0.3.0.tgz) from the [v0.3.0 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.0), then install the downloaded file:
+Or download [dsh-starharbor-0.3.1.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.1/dsh-starharbor-0.3.1.tgz) from the [v0.3.1 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.1), then install the downloaded file:
 
 ```sh
-dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.3.0.tgz
+dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.3.1.tgz
 ```
 
 Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The npm package is not published and community market inclusion is pending.

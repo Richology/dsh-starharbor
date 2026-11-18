@@ -4,6 +4,7 @@ export const SOURCE_CODES = Object.freeze(['daily_gain', 'weekly_gain', 'trendin
 const legacyCategories = { '人工智能': 'ai', '开发工具': 'devtools', '自动化': 'automation', '数据与存储': 'data', '基础设施': 'infrastructure', '前端与 Web': 'web', '应用软件': 'apps', '学习与资源': 'learning', '学习教程': 'learning', '资源合集': 'resources', '综合项目': 'general' };
 export const categoryLabel = id => LABELS[id] || LABELS.general;
 
+const securityPurpose = /\b(bug[\s-]+hunting|red[\s-]+team)\b/;
 const webPurpose = /\b(design[\s-]+systems?|component[\s-]+librar(?:y|ies)|ui[\s-]+frameworks?)\b|设计系统|组件库|界面框架/;
 function categoryText(repo) {
   const name = String(repo.name || repo.full_name || '').split('/').at(-1);
@@ -12,10 +13,10 @@ function categoryText(repo) {
 // Match the repository's purpose, never its implementation language or incidental README text.
 export function classifyCategory(repo) {
   const text = categoryText(repo);
-  if (/\b(awesome|curated|resource[s]?|collection|collective.list|free.apis)\b|public-apis|资源合集|资源清单/.test(text)) return 'resources';
+  if (/\b(awesome|curated[\s-]+(?:list|collection|resources?)|resource[s]?|collection|collective.list|free.apis)\b|public-apis|资源合集|资源清单/.test(text)) return 'resources';
   if (/\b(learn|tutorial[s]?|course[s]?|book[s]?|interview|education|handbook)\b|build.your.own|master.programming|教程|课程|学习资料/.test(text)) return 'learning';
   if (/\b(automation|automate|workflow|scraper|scraping|rpa|browser.automation)\b|自动化|工作流/.test(text)) return 'automation';
-  if (/\b(editor|terminal|cli|developer.tool[s]?|devtools|ide|debugger|compiler|linter|formatter|package.manager)\b|review.code|code.review|reverse.engineer|coding.agent|security.testing|开发工具|代码编辑器|逆向工程|代码审查|安全测试/.test(text)) return 'devtools';
+  if (securityPurpose.test(text) || /\b(editor|terminal|cli|developer.tool[s]?|devtools|ide|debugger|compiler|linter|formatter|package.manager)\b|review.code|code.review|reverse.engineer|coding.agent|security.testing|开发工具|代码编辑器|逆向工程|代码审查|安全测试/.test(text)) return 'devtools';
   if (/\b(database|sql|redis|storage|postgres|postgresql|sqlite)\b|数据库|数据存储/.test(text)) return 'data';
   if (/\b(devops|docker|kubernetes|container|deployment|terraform|infrastructure)\b|基础设施|容器部署/.test(text)) return 'infrastructure';
   if (webPurpose.test(text) || /\b(react|vue|frontend|css|html|web.framework|nextjs|svelte)\b|前端|网页框架/.test(text)) return 'web';
@@ -36,7 +37,8 @@ export function projectRepo(repo) {
   const inferred = classifyCategory(repo);
   // Correct only the verified AI/agent-ready design-system misclassification in the returned view.
   const correctedWebPurpose = repo.categoryId === 'ai' && inferred === 'web' && webPurpose.test(categoryText(repo));
-  const categoryId = correctedWebPurpose ? 'web' : CATEGORY_IDS.includes(repo.categoryId) ? repo.categoryId : inferred !== 'general' ? inferred : legacyCategories[repo.category] || 'general';
+  const correctedSecurityPurpose = repo.categoryId === 'resources' && inferred === 'devtools' && securityPurpose.test(categoryText(repo));
+  const categoryId = correctedWebPurpose ? 'web' : correctedSecurityPurpose ? 'devtools' : CATEGORY_IDS.includes(repo.categoryId) ? repo.categoryId : inferred !== 'general' ? inferred : legacyCategories[repo.category] || 'general';
   const code = SOURCE_CODES.includes(repo.sourceCode) ? repo.sourceCode : sourceCode(repo.source);
   const summaryZh = typeof repo.summaryZh === 'string' && repo.summaryZh.trim() ? repo.summaryZh : /[\u4e00-\u9fff]/.test(repo.summary || '') && /translated|enriched/.test(repo.summarySource || '') ? repo.summary.split(/[\r\n]/, 1)[0].trim() : '';
   return { ...repo, categoryId, language: repo.language || repo.category?.match(/^编程语言 · (.+)$/)?.[1] || null, summaryZh,

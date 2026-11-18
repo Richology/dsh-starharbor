@@ -463,8 +463,9 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
     save: id => exclusive(root, async () => {
       if (!Number.isSafeInteger(id) || id <= 0) throw new TypeError('仓库 id 必须为正整数');
       const state = await load();
-      const repo = [state.today, ...state.history].filter(Boolean).flatMap(board => board.repos).find(item => item.id === id);
-      if (!repo) throw new Error('只能收藏已有推荐中的仓库 id');
+      const found = [state.today, ...state.history].filter(Boolean).flatMap(board => board.repos).find(item => item.id === id);
+      if (!found) throw new Error('只能收藏已有推荐中的仓库 id');
+      const repo = { ...found, category: found.categoryId !== 'general' ? categoryLabel(found.categoryId) : found.category || categoryLabel('general') };
       let content;
       try { content = await fs.readFile(collectionPath, 'utf8'); }
       catch (error) { if (error.code !== 'ENOENT') throw error; content = '# GitHub 收藏\n'; }

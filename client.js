@@ -130,7 +130,8 @@ window.__ModuleLoader__.load({
           const lifecycle = React.useRef(null);
           const saveIds = React.useRef(new Set());
           const initialized = React.useRef(false);
-          const draftVersion = React.useRef(0);
+          const draftValues = React.useRef({});
+          const knownSettings = React.useRef(null);
           const tabRefs = React.useRef({});
           const instanceId = React.useId();
           const busy = pendingCount > 0;
@@ -141,7 +142,7 @@ window.__ModuleLoader__.load({
           function call(input, options = {}) {
             const life = lifecycle.current;
             if (!isLive(life) || (input.action === 'save' && saveIds.current.has(input.id))) return;
-            const version = draftVersion.current;
+            const submittedDraft = { ...draftValues.current };
             if (input.action === 'save') {
               saveIds.current.add(input.id);
               setPendingSaves(new Set(saveIds.current));
@@ -174,10 +175,17 @@ window.__ModuleLoader__.load({
                 if (!result || typeof result !== 'object' || Array.isArray(result)) throw { code: 'request_failed', message: 'Invalid state response' };
                 if (!isLive(life)) return;
                 setState(result);
-                if (!initialized.current || (input.action === 'settings' && draftVersion.current === version)) {
-                  initialized.current = true;
-                  setDraft(settingsDraft(result.settings));
+                const incoming = settingsDraft(result.settings);
+                const nextDraft = {};
+                for (const key of settingKeys) {
+                  const baseline = input.action === 'settings' ? submittedDraft[key] : String(knownSettings.current?.[key] ?? '');
+                  const untouched = draftValues.current[key] === baseline;
+                  nextDraft[key] = !initialized.current || untouched ? incoming[key] : draftValues.current[key] ?? incoming[key];
                 }
+                initialized.current = true;
+                knownSettings.current = result.settings;
+                draftValues.current = nextDraft;
+                setDraft(nextDraft);
                 if (input.action === 'save') setNotice({ key: 'savedRepo', params: { name: options.name || result.receipt?.name || String(input.id) } });
                 if (input.action === 'settings') setNotice({ key: 'done' });
               } catch (failure) {
@@ -294,7 +302,7 @@ window.__ModuleLoader__.load({
               const id = `${instanceId}-setting-${field}`;
               return h('div', { className: 'sh-field', key: field }, h('label', { htmlFor: id }, t(field)),
                 h('div', { className: 'sh-field-control' }, h('input', { id, className: 'sh-input', type: 'text', inputMode: 'numeric', required: true, value: draft[field] ?? '', 'aria-invalid': Boolean(validation[field]), 'aria-describedby': validation[field] ? `${id}-error` : undefined,
-                  onChange: event => { const raw = event.target.value; draftVersion.current += 1; setDraft(previous => ({ ...previous, [field]: raw })); } })),
+                  onChange: event => { draftValues.current = { ...draftValues.current, [field]: event.target.value }; setDraft(draftValues.current); } })),
                 validation[field] ? h('span', { id: `${id}-error`, className: 'sh-field-error' }, validation[field]) : null);
             }), h('span', { className: 'sh-muted', role: 'status' }, hasValidation ? t('validationCount', { count: Object.keys(validation).length }) : t(dirty ? 'unsaved' : 'unchanged')),
               h('button', { className: 'sh-btn sh-primary', disabled: busy || !dirty || hasValidation, type: 'submit' }, t(settingsSaving ? 'settingsSaving' : 'submit')), pathView());

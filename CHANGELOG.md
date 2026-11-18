@@ -1,5 +1,23 @@
 # Changelog / 更新记录
 
+## v0.3.1 — 2026-11-18
+
+### Independent QA fixes / 独立测试修复
+
+- Save new Markdown entries using the corrected purpose category, while keeping existing entries and handwritten notes intact.
+- Accept valid historical daily/weekly gains that exceed a later current Star count after same-day unstars; keep interval and integer validation.
+- Reject explicitly malformed settings values consistently in HTTP and tool calls.
+- Synchronize settings changed in another window without marking untouched old values as unsaved or overwriting fields currently being edited.
+- Classify working bug-hunting/red-team tools by purpose instead of incidental “curated patterns”; genuine curated lists remain resources.
+- Add 26 independent audit checks; the full suite now passes 94 tests. See [the audit report](qa-audit-report.md) for reproduction steps, coverage and limits.
+
+- 新收藏按修正后的用途分类写入 Markdown，保留旧条目和手写笔记。
+- 修正历史日/周净增与稍后当前累计 Star 的错误比较，取消 Star 不再导致合法云端数据被拒绝。
+- HTTP 与工具接口统一拒绝显式非法设置值。
+- 外部设置变化时更新未编辑字段，并保留正在编辑的草稿。
+- 安全测试工具不再因内部 curated patterns 误归为资源合集，真正资源列表保持原分类。
+- 新增 26 项独立审计检查，全量 94 项测试通过；复现、覆盖和限制见[审计报告](qa-audit-report.md)。
+
 ## v0.3.0 — 2026-11-18
 
 ### Cloud collection and local selection / 云端采集与本地选榜

@@ -23,13 +23,13 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐最多 5 个公开 Git
 通过固定版本的 GitHub 源码安装：
 
 ```sh
-dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.3.0
+dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.3.1
 ```
 
-也可以从 [v0.3.0 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.0) 下载 [dsh-starharbor-0.3.0.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.0/dsh-starharbor-0.3.0.tgz)，再安装下载的文件：
+也可以从 [v0.3.1 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.1) 下载 [dsh-starharbor-0.3.1.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.1/dsh-starharbor-0.3.1.tgz)，再安装下载的文件：
 
 ```sh
-dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.3.0.tgz
+dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.3.1.tgz
 ```
 
 源码位于 [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor)。npm 包尚未发布，社区市场尚未收录。
