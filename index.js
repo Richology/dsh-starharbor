@@ -1,4 +1,18 @@
 import path from 'node:path';
+import { mkdir } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const runFile = promisify(execFile);
+
+export async function openCollectionFolder(directory, { platform = process.platform, run = runFile, signal } = {}) {
+  const command = { darwin: '/usr/bin/open', win32: 'explorer.exe', linux: 'xdg-open' }[platform];
+  if (!command) throw new Error('Opening folders is not supported on this host platform');
+  const folder = path.resolve(directory);
+  await mkdir(folder, { recursive: true });
+  await run(command, [folder], { timeout: 10000, windowsHide: true, signal });
+  return folder;
+}
 import { createHarbor } from './core.js';
 import { createFeedTransport } from './transport.js';
 
@@ -31,6 +45,14 @@ export function apply(ctx, config = {}) {
     switch (input.action) {
       case 'status': return harbor.status();
       case 'refresh': return harbor.refresh({ force: Boolean(input.force) });
+      case 'open_collection_folder': {
+        try {
+          const folder = await openCollectionFolder(dataDir, { signal: abort.signal });
+          return { ...(await harbor.status()), openedFolder: folder };
+        } catch (error) {
+          throw Object.assign(error, { code: 'collection_open_failed' });
+        }
+      }
       case 'save': {
         if (!Number.isSafeInteger(input.id) || input.id < 1) throw Object.assign(new Error('A positive repository id is required'), { code: 'invalid_id' });
         let receipt;
@@ -61,17 +83,17 @@ export function apply(ctx, config = {}) {
         const result = await operate(request.method === 'GET' ? { action: 'status' } : JSON.parse(text));
         return Response.json(result, { headers: { 'Cache-Control': 'no-store' } });
       } catch (error) {
-        const allowed = ['invalid_request', 'invalid_id', 'invalid_settings', 'not_recommended'];
+        const allowed = ['invalid_request', 'invalid_id', 'invalid_settings', 'not_recommended', 'collection_open_failed'];
         const code = error instanceof SyntaxError ? 'invalid_request' : allowed.includes(error.code) ? error.code : 'request_failed';
-        return Response.json({ error: error.message, code }, { status: code === 'request_failed' ? 500 : 400, headers: { 'Cache-Control': 'no-store' } });
+        return Response.json({ error: error.message, code }, { status: ['request_failed', 'collection_open_failed'].includes(code) ? 500 : 400, headers: { 'Cache-Control': 'no-store' } });
       }
     },
   }));
   ctx.effect(() => ctx.tools.register({
     name: 'starharbor',
-    description: 'Read StarHarbor daily GitHub recommendations and cloud feed freshness, synchronize public candidates, save a recommended repository to local categorized Markdown, or change local ranking thresholds. Returns today, last 7 boards, last 50 saved repos, totals and collection path. Collections and preferences stay local; growth is null without complete observations.',
+    description: 'Read StarHarbor daily GitHub recommendations and cloud feed freshness, synchronize public candidates, save a recommended repository to local categorized Markdown, change local ranking thresholds, or open the collection folder in the host computer’s file manager. Returns today, last 7 boards, last 50 saved repos, totals and collection path. Collections and preferences stay local; growth is null without complete observations.',
     parameters: { type: 'object', properties: {
-      action: { type: 'string', enum: ['status', 'refresh', 'save', 'settings'] },
+      action: { type: 'string', enum: ['status', 'refresh', 'save', 'settings', 'open_collection_folder'] },
       id: { type: 'integer', description: 'Repository id from status; required for save.' },
       force: { type: 'boolean', description: 'Synchronize the cloud feed now, bypassing the hourly check. May generate a board before the chosen hour; an existing same-day selection stays stable.' },
       settings: { type: 'object', description: 'Fields to update; omitted fields stay unchanged.', properties: {

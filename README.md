@@ -23,13 +23,13 @@ Requires DSH `>=0.2.2-rc.1 <0.3.0` and Node.js 22 or later. StarHarbor uses nati
 Install from the pinned GitHub source:
 
 ```sh
-dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.4.0
+dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.4.1
 ```
 
-Or download [dsh-starharbor-0.4.0.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.0/dsh-starharbor-0.4.0.tgz) from the [v0.4.0 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.0), then install the downloaded file:
+Or download [dsh-starharbor-0.4.1.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.1/dsh-starharbor-0.4.1.tgz) from the [v0.4.1 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.1), then install the downloaded file:
 
 ```sh
-dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.4.0.tgz
+dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.4.1.tgz
 ```
 
 Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The npm package is not published and community market inclusion is pending.
@@ -40,7 +40,7 @@ After installation:
 2. Open StarHarbor from the star-and-harbor icon in the sidebar. The plugin checks the feed on startup and when the panel opens, subject to its hourly sync interval.
 3. Click **Refresh data** to sync immediately. Before the configured generation hour, this can create the first board early. A completed same-day board stays fixed.
 4. Open a repository on GitHub or click **Save to Markdown**. The card shows progress and then a check mark when saving completes.
-5. Open **Collection** or **Settings** to see and copy the actual collection file path.
+5. In **Collection**, click **Open containing folder** to open the Markdown collection directory in your computer’s file manager. The collection path and **Copy path** remain available in Collection and Settings.
 
 Saving is explicit; recommendations are never automatically added to your collection. **History** keeps previous daily boards. Settings control star thresholds, the repeat interval, and the daily generation hour.
 

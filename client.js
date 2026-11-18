@@ -39,6 +39,8 @@ window.__ModuleLoader__.load({
     });
     Object.assign(dictionaries.zh, { subtitle: '每天发现值得收藏的 GitHub 项目', recommendationCount: '每日推荐数量（1–10 个）', countHelp: '默认 5 个；修改后从北京时间次日生效，今天的推荐保持不变。候选不足时可能少于设定数量。', countActive: '当前生效：每天最多 {count} 个', countPending: '新数量：每天最多 {count} 个，将于 {date}（北京时间）生效。' });
     Object.assign(dictionaries.en, { subtitle: 'Daily GitHub projects worth keeping', recommendationCount: 'Daily recommendations (1–10)', countHelp: 'Default: 5. Changes take effect on the next calendar day in Asia/Shanghai. Today stays unchanged; fewer eligible candidates may be available.', countActive: 'Currently active: up to {count} per day', countPending: 'Up to {count} per day starting {date} (Asia/Shanghai).' });
+    Object.assign(dictionaries.zh, { openFolder: '打开所在文件夹', folderOpened: '已打开收藏文件所在文件夹', error_collection_open_failed: '无法打开文件夹，请复制路径后手动打开。' });
+    Object.assign(dictionaries.en, { openFolder: 'Open containing folder', folderOpened: 'Opened the collection folder', error_collection_open_failed: 'Could not open the folder. Copy the path and open it manually.' });
     const categoryIds = ['ai', 'devtools', 'automation', 'data', 'infrastructure', 'web', 'apps', 'learning', 'resources', 'general'];
     const sourceCodes = ['daily_gain', 'weekly_gain', 'trending_daily', 'trending_weekly', 'classic'];
     const settingKeys = ['recommendationCount', 'dailyMin', 'weeklyMin', 'classicMin', 'preferredMin', 'cooldownDays', 'hour'];
@@ -191,6 +193,7 @@ window.__ModuleLoader__.load({
                 setDraft(nextDraft);
                 if (input.action === 'save') setNotice({ key: 'savedRepo', params: { name: options.name || result.receipt?.name || String(input.id) } });
                 if (input.action === 'settings') setNotice({ key: 'done' });
+                if (input.action === 'open_collection_folder') setNotice({ key: 'folderOpened' });
               } catch (failure) {
                 if (isLive(life)) setError({ code: failure?.code || 'request_failed', details: failure?.details, message: failure?.message || String(failure), httpStatus: failure?.httpStatus });
               } finally {
@@ -236,7 +239,7 @@ window.__ModuleLoader__.load({
             return Number.isFinite(parsed.getTime()) ? parsed.toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US') : '—';
           };
           const diagnostics = value => value ? h('details', { className: 'sh-diagnostics' }, h('summary', null, t('diagnostics')), h('pre', null, typeof value === 'string' ? value : JSON.stringify(value, null, 2))) : null;
-          const errorText = value => t(`error_${['invalid_settings', 'invalid_id', 'not_recommended', 'request_failed', 'http_error', 'collection_failed', 'refresh_timeout', 'invalid_request', 'access_denied', 'feed_http', 'feed_invalid', 'feed_timeout', 'feed_fetch_failed'].includes(value?.code) ? value.code : 'request_failed'}`);
+          const errorText = value => t(`error_${['collection_open_failed', 'invalid_settings', 'invalid_id', 'not_recommended', 'request_failed', 'http_error', 'collection_failed', 'refresh_timeout', 'invalid_request', 'access_denied', 'feed_http', 'feed_invalid', 'feed_timeout', 'feed_fetch_failed'].includes(value?.code) ? value.code : 'request_failed'}`);
           const warningText = detail => {
             const code = detail?.code;
             const params = detail?.params || {};
@@ -283,6 +286,7 @@ window.__ModuleLoader__.load({
           const dirty = settingKeys.some(key => (draft[key] ?? '') !== String(state?.settings?.[key] ?? ''));
           const hasValidation = Object.keys(validation).length > 0;
           const collectionPath = state?.collectionPath || '';
+          const openFolderButton = () => h('button', { type: 'button', className: 'sh-btn', disabled: busy || !collectionPath, onClick: () => call({ action: 'open_collection_folder' }) }, t('openFolder'));
           const pathView = () => h('div', { className: 'sh-path' }, h('strong', null, t('collection')),
             collectionPath ? h('code', { tabIndex: 0 }, collectionPath) : h('span', null, t('pathUnavailable')),
             h('button', { type: 'button', className: 'sh-btn', disabled: !collectionPath, onClick: async () => {
@@ -290,6 +294,7 @@ window.__ModuleLoader__.load({
               try { await navigator.clipboard.writeText(collectionPath); if (isLive(life)) setCopyState('copied'); }
               catch { if (isLive(life)) setCopyState('copyFailed'); }
             } }, t('copy')),
+            openFolderButton(),
             copyState ? h('span', { role: copyState === 'copyFailed' ? 'alert' : 'status', className: `sh-path-note ${copyState === 'copyFailed' ? 'sh-error' : 'sh-success'}` }, t(copyState)) : null);
           const tabs = ['today', 'history', 'saved', 'settings'];
           const activateTab = key => { setTab(key); setNotice(null); };
@@ -317,7 +322,7 @@ window.__ModuleLoader__.load({
                 h('label', { className: 'sh-filter' }, t('search'), h('input', { className: 'sh-input', type: 'search', value: query, placeholder: t('searchPlaceholder'), onChange: event => setQuery(event.target.value) })),
                 h('label', { className: 'sh-filter' }, t('categoryFilter'), h('select', { className: 'sh-input', value: category, onChange: event => setCategory(event.target.value) }, h('option', { value: '' }, t('allCategories')), ...categoryIds.map(id => h('option', { value: id, key: id }, t(`category_${id}`))))),
                 query || category ? h('button', { className: 'sh-btn', onClick: () => { setQuery(''); setCategory(''); } }, t('clearFilters')) : null) : null,
-              h('div', { className: 'sh-sectionTitle' }, h('h2', null, key === 'saved' ? t('saved') : day?.date ? `${t('boardDate')} · ${day.date}` : t('today')), h('span', { className: 'sh-muted', 'aria-live': 'polite' }, `${repos.length} ${language === 'en' && repos.length === 1 ? 'project' : t('count')}`)),
+              h('div', { className: 'sh-sectionTitle' }, h('h2', null, key === 'saved' ? t('saved') : day?.date ? `${t('boardDate')} · ${day.date}` : t('today')), h('span', { className: 'sh-muted', 'aria-live': 'polite' }, `${repos.length} ${language === 'en' && repos.length === 1 ? 'project' : t('count')}`), key === 'saved' ? openFolderButton() : null),
               key !== 'saved' && day?.generatedAt ? h('p', { className: 'sh-muted' }, t('boardSelected', { time: dateTime(day.generatedAt) })) : null,
               key !== 'saved' && !state?.feed && repos.some(repo => !Number.isFinite(repo.dailyGain) || !Number.isFinite(repo.weeklyGain)) ? h('div', { className: 'sh-status' }, h('strong', null, t('observing')), h('span', { className: 'sh-muted' }, t('observingNote'))) : null,
               key !== 'saved' ? renderError(state.lastError, 'previous-collection', true) : null,

@@ -1,5 +1,10 @@
 # Changelog / 更新记录
 
+## v0.4.1 — 2026-11-18
+
+- Add **Open containing folder** at the top of Collection and beside the collection path. Opens the configured collection directory in the host computer’s file manager; shows an error with a copy-path fallback if opening fails.
+- 「已收藏」页面顶部及收藏路径旁新增「打开所在文件夹」，点击后使用电脑的文件管理器打开收藏目录；失败时提示复制路径手动打开。
+
 ## v0.4.0 — 2026-11-18
 
 - Configure 1–10 daily recommendations, default 5. Count changes take effect the next Asia/Shanghai calendar day, including before the first board. Preserve today’s selection and show active/pending counts in Settings.

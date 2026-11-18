@@ -23,13 +23,13 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐 1–10 个公开 GitH
 通过固定版本的 GitHub 源码安装：
 
 ```sh
-dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.4.0
+dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.4.1
 ```
 
-也可以从 [v0.4.0 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.0) 下载 [dsh-starharbor-0.4.0.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.0/dsh-starharbor-0.4.0.tgz)，再安装下载的文件：
+也可以从 [v0.4.1 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.1) 下载 [dsh-starharbor-0.4.1.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.1/dsh-starharbor-0.4.1.tgz)，再安装下载的文件：
 
 ```sh
-dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.4.0.tgz
+dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.4.1.tgz
 ```
 
 源码位于 [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor)。npm 包尚未发布，社区市场尚未收录。
@@ -40,7 +40,7 @@ dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.4.
 2. 点击侧边栏的星形港湾图标。插件启动和面板打开时会检查是否到达每小时同步间隔。
 3. 点击「更新数据」可立即同步。尚未到设定生成小时，也可以提前生成第一份榜单；已完成的同日榜单保持固定。
 4. 打开 GitHub 查看仓库，或点击「收藏到 Markdown」。保存期间该卡片显示处理状态，完成后显示勾选标记。
-5. 在「已收藏」或「推荐设置」查看并复制实际收藏文件路径。
+5. 在「已收藏」页面点击「打开所在文件夹」，即可用电脑的文件管理器打开 Markdown 收藏目录。「已收藏」和「推荐设置」中仍可查看并复制实际收藏文件路径。
 
 只有点击收藏才会写入收藏文件，推荐不会自动收藏。「往日发现」保留此前生成的每日推荐。设置可调整 Star 门槛、重复推荐间隔和每日生成小时。
 
