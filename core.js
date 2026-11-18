@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { categoryLabel, classifyCategory, projectBoard, projectRepo, sourceCode, warningDetail } from './domain.js';
 import { validateFeed, selectFeedBoard } from './feed.js';
 
-const DEFAULTS = Object.freeze({ dailyMin: 5000, weeklyMin: 10000, classicMin: 30000, preferredMin: 50000, cooldownDays: 30, hour: 9 });
+const DEFAULTS = Object.freeze({ dailyMin: 5000, weeklyMin: 10000, classicMin: 30000, preferredMin: 50000, cooldownDays: 30, hour: 9, recommendationCount: 5 });
 const locks = new Map();
 const refreshes = new Map();
 const DAY = 86400000;
@@ -12,6 +12,23 @@ const clone = value => structuredClone(value);
 const dateKey = value => new Date(new Date(value).getTime() + 8 * 3600000).toISOString().slice(0, 10);
 const shiftDate = (date, days) => dateKey(Date.parse(`${date}T00:00:00+08:00`) + days * DAY);
 const midnight = date => Date.parse(`${date}T00:00:00+08:00`);
+const validCount = value => Number.isSafeInteger(value) && value >= 1 && value <= 10;
+// Keep the pending transition until a later edit so stale feed dates can resolve it too.
+function countAt(state, date) {
+  const schedule = state.countSchedule;
+  let count = (state.countHistory || []).length ? DEFAULTS.recommendationCount
+    : validCount(schedule?.activeCount) ? schedule.activeCount : DEFAULTS.recommendationCount;
+  for (const transition of state.countHistory || []) {
+    if (transition.effectiveDate <= date && validCount(transition.count)) count = transition.count;
+  }
+  if (validCount(schedule?.pendingCount) && schedule.effectiveDate <= date) count = schedule.pendingCount;
+  return count;
+}
+function countScheduleView(state, date) {
+  const schedule = state.countSchedule;
+  const pending = validCount(schedule?.pendingCount) && typeof schedule.effectiveDate === 'string' && schedule.effectiveDate > date;
+  return { activeCount: countAt(state, date), pendingCount: pending ? schedule.pendingCount : null, effectiveDate: pending ? schedule.effectiveDate : null };
+}
 function exclusive(key, work) {
   const previous = locks.get(key) || Promise.resolve();
   const next = previous.catch(() => {}).then(work);
@@ -41,7 +58,7 @@ function validSettings(patch, current) {
   const result = { ...current };
   for (const [key, value] of Object.entries(patch)) {
     if (!Object.hasOwn(DEFAULTS, key)) throw new TypeError(`未知设置：${key}`);
-    const [min, max] = key === 'hour' ? [0, 23] : key === 'cooldownDays' ? [0, 3650] : [0, 1000000000];
+    const [min, max] = key === 'hour' ? [0, 23] : key === 'cooldownDays' ? [0, 3650] : key === 'recommendationCount' ? [1, 10] : [0, 1000000000];
     if (!Number.isSafeInteger(value) || value < min || value > max) throw new RangeError(`${key} 必须为 ${min}–${max} 的整数`);
     result[key] = value;
   }
@@ -115,7 +132,7 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
       error: metadata.error || null
     };
   }
-  const view = state => clone({ settings: state.settings, today: state.today, history: state.history, saved: state.saved, collectionPath, lastError: state.lastError,
+  const view = state => clone({ settings: state.settings, countSchedule: countScheduleView(state, dateKey(clock())), today: state.today, history: state.history, saved: state.saved, collectionPath, lastError: state.lastError,
     ...(cloud ? { feed: feedView(state) } : {}) });
   async function requestFeed() {
     const timeLeft = remaining();
@@ -174,11 +191,11 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
     }
     // A cached feed can become due for selection before the next hourly fetch.
     const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Shanghai', hour: '2-digit', hourCycle: 'h23' }).format(clock()));
-    if (feed && !snapshotOnly && (force || hour >= state.settings.hour)) {
+    if (feed && feed.date <= dateKey(clock()) && !snapshotOnly && (force || hour >= state.settings.hour)) {
       const sameDay = state.history.find(board => board.date === feed.date);
       if (sameDay && (!state.today || state.today.date <= feed.date)) state.today = clone(sameDay);
       else if (!sameDay && (feedFresh(feed) || !state.today)) {
-        const board = selectFeedBoard(feed, { settings: state.settings, history: state.history, saved: state.saved, now: clock() });
+        const board = selectFeedBoard(feed, { settings: { ...state.settings, recommendationCount: countAt(state, feed.date) }, history: state.history, saved: state.saved, now: clock() });
         if (!feedFresh(feed)) {
           board.warnings ||= [];
           board.warningDetails ||= [];
@@ -305,6 +322,7 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
     if (candidates.length > 20) warnings.push('为减少限流，本次最多额外查询20个 Trending 仓库；其余候选未核实。');
     const at = clock().toISOString();
     const today = dateKey(at);
+    const target = countAt(state, today);
     // An endpoint belongs to each repository's actual observation, not the end of a potentially slow batch.
     for (const meta of metadata.values()) {
       const observedAt = observationTimes.get(meta.id);
@@ -344,6 +362,7 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
     const chosen = [];
     const eligible = repo => !saved.has(repo.id) && !cooled.has(repo.id) && !chosen.some(item => item.id === repo.id);
     function pick(list, min, source, reason) {
+      if (chosen.length >= target) return;
       const repo = list.find(item => item.stars >= min && eligible(item));
       if (repo) chosen.push({ ...repo, source, reason, sourceCode: sourceCode(source), reasonCode: sourceCode(source), badges: [source] });
     }
@@ -356,7 +375,7 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
     const classics = search.map(meta => repos.get(meta.full_name?.toLowerCase())).filter(Boolean).sort((a, b) =>
       Number(b.stars >= state.settings.preferredMin) - Number(a.stars >= state.settings.preferredMin) || b.stars - a.stars || a.id - b.id);
     const categories = new Set();
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < Math.max(0, target - 2); i++) {
       const diverse = classics.filter(repo => !categories.has(repo.categoryId) && eligible(repo) && repo.stars >= state.settings.classicMin);
       const pool = diverse.length ? diverse : classics;
       const before = chosen.length;
@@ -368,7 +387,7 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
         if (leader.repo?.id === repo.id && !repo.badges.includes(leader.label)) repo.badges.push(leader.label);
       }
     }
-    if (chosen.length < 5) warnings.push(`本次仅有 ${chosen.length}/5 个符合星数、去重、收藏排除、冷却和分类条件的真实项目，未填充虚构推荐。`);
+    if (chosen.length < target) warnings.push(`本次仅有 ${chosen.length}/${target} 个符合星数、去重、收藏排除、冷却和分类条件的真实项目，未填充虚构推荐。`);
     warnings.push('Trending 展示近1日/近7日趋势；缺少完整上海午夜端点时，星数净增为未知。');
     return { board: { date: today, generatedAt: at, repos: chosen, warnings, warningDetails: warnings.map(message => failures.find(failure => failure.message === message)?.detail || warningDetail(message)), leaders }, failures };
   }
@@ -456,7 +475,19 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
     },
     settings: patch => exclusive(root, async () => {
       const state = await load();
-      state.settings = validSettings(patch, state.settings);
+      const settings = validSettings(patch, state.settings);
+      if (Object.hasOwn(patch, 'recommendationCount') && settings.recommendationCount !== state.settings.recommendationCount) {
+        const today = dateKey(clock());
+        const activeCount = countAt(state, today);
+        const previous = state.countSchedule;
+        if (validCount(previous?.pendingCount) && previous.effectiveDate <= today) {
+          state.countHistory ||= [];
+          state.countHistory.push({ effectiveDate: previous.effectiveDate, count: previous.pendingCount });
+        }
+        const pendingCount = settings.recommendationCount === activeCount ? null : settings.recommendationCount;
+        state.countSchedule = { activeCount, pendingCount, effectiveDate: pendingCount === null ? null : shiftDate(today, 1) };
+      }
+      state.settings = settings;
       await persist(state);
       return view(state);
     }),

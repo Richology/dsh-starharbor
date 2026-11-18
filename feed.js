@@ -1,7 +1,7 @@
 import { CATEGORY_IDS, categoryLabel, classifyCategory } from './domain.js';
 
 const DAY = 86400000;
-const DEFAULTS = { dailyMin: 5000, weeklyMin: 10000, classicMin: 30000, preferredMin: 50000, cooldownDays: 30 };
+const DEFAULTS = { dailyMin: 5000, weeklyMin: 10000, classicMin: 30000, preferredMin: 50000, cooldownDays: 30, recommendationCount: 5 };
 const dateKey = value => new Date(new Date(value).getTime() + 8 * 3600000).toISOString().slice(0, 10);
 const midnight = date => Date.parse(`${date}T00:00:00+08:00`);
 const shift = (date, days) => dateKey(midnight(date) + days * DAY);
@@ -123,7 +123,9 @@ function project(repo) {
 export function selectFeedBoard(value, { settings = {}, history = [], saved = [], now = new Date() } = {}) {
   const feed = validateFeed(value, { now });
   const preferences = { ...DEFAULTS, ...settings };
-  for (const key of Object.keys(DEFAULTS)) integer(preferences[key], `settings.${key}`);
+  for (const key of Object.keys(DEFAULTS)) integer(preferences[key], `settings.${key}`, key === 'recommendationCount' ? 1 : 0);
+  const target = preferences.recommendationCount;
+  if (target > 10) fail('settings.recommendationCount must be an integer from 1 to 10');
   const byId = new Map(feed.repos.map(repo => [repo.id, project(repo)]));
   const savedIds = new Set(saved.map(repo => typeof repo === 'number' ? repo : repo.id));
   const cooled = new Set(history.filter(board => {
@@ -145,11 +147,11 @@ export function selectFeedBoard(value, { settings = {}, history = [], saved = []
     leaders[period] = { label, labelCode: mode, repo: leader };
     if (!leader) add({ code: 'leader_unavailable', params: { period } });
     const chosen = feed.rankings[period].map(id => byId.get(id)).find(repo => repo.stars >= preferences[`${period}Min`] && eligible(repo));
-    if (chosen) repos.push({ ...chosen, source, reason: measured ? '按具备完整上海自然日端点的已观测候选星数净增排序。' : '按 GitHub Trending 榜单顺序选取；不代表完整自然日星数净增冠军。', sourceCode: mode, reasonCode: mode, badges: [source] });
+    if (chosen && repos.length < target) repos.push({ ...chosen, source, reason: measured ? '按具备完整上海自然日端点的已观测候选星数净增排序。' : '按 GitHub Trending 榜单顺序选取；不代表完整自然日星数净增冠军。', sourceCode: mode, reasonCode: mode, badges: [source] });
   }
   const classics = feed.rankings.classic.map(id => byId.get(id)).sort((a, b) => Number(b.stars >= preferences.preferredMin) - Number(a.stars >= preferences.preferredMin) || b.stars - a.stars || a.id - b.id);
   const categories = new Set();
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < Math.max(0, target - 2); i++) {
     const pool = classics.filter(repo => repo.stars >= preferences.classicMin && eligible(repo));
     const chosen = pool.find(repo => !categories.has(repo.categoryId)) || pool[0];
     if (!chosen) break;
@@ -157,7 +159,7 @@ export function selectFeedBoard(value, { settings = {}, history = [], saved = []
     repos.push({ ...chosen, source: '经典高星', reason: '高星经典项目；优先达到偏好星数门槛，优先分类不同，分类不足时使用同类真实项目。', sourceCode: 'classic', reasonCode: 'classic', badges: ['经典高星'] });
   }
   for (const repo of repos) for (const leader of Object.values(leaders)) if (leader.repo?.id === repo.id) repo.badges.push(leader.label);
-  if (repos.length < 5) add({ code: 'recommendation_shortage', params: { count: repos.length, target: 5 } });
+  if (repos.length < target) add({ code: 'recommendation_shortage', params: { count: repos.length, target } });
   if (feed.repos.some(repo => repo.dailyGain === null || repo.weeklyGain === null)) add({ code: 'growth_unavailable' });
   return { date: feed.date, generatedAt: new Date(now).toISOString(), feedGeneratedAt: feed.generatedAt, repos, warnings: details.map(warningMessage), warningDetails: details, leaders };
 }

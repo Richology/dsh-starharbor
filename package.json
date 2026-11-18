@@ -1,6 +1,6 @@
 {
   "name": "dsh-starharbor",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "dependencies": { "undici": "7.30.2" },
   "description": "StarHarbor 星港 · Daily GitHub discoveries and Markdown collections for DSH",
   "type": "module",

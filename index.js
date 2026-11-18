@@ -75,6 +75,7 @@ export function apply(ctx, config = {}) {
       id: { type: 'integer', description: 'Repository id from status; required for save.' },
       force: { type: 'boolean', description: 'Synchronize the cloud feed now, bypassing the hourly check. May generate a board before the chosen hour; an existing same-day selection stays stable.' },
       settings: { type: 'object', description: 'Fields to update; omitted fields stay unchanged.', properties: {
+        recommendationCount: { type: 'integer', minimum: 1, maximum: 10, description: 'Daily recommendations, 1–10 (default 5). Changes take effect the next calendar day in Asia/Shanghai; today stays unchanged.' },
         dailyMin: { type: 'integer' }, weeklyMin: { type: 'integer' }, classicMin: { type: 'integer' }, preferredMin: { type: 'integer' }, cooldownDays: { type: 'integer' }, hour: { type: 'integer', description: 'Daily generation hour, 0–23 in Asia/Shanghai.' },
       }, additionalProperties: false },
     }, required: ['action'], additionalProperties: false },

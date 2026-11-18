@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-StarHarbor 星港是 DSH 的侧边栏插件，每天推荐最多 5 个公开 GitHub 仓库。你可以浏览今日推荐、回看往日记录，再把选中的项目保存到电脑上的分类 Markdown 收藏中。
+StarHarbor 星港是 DSH 的侧边栏插件，每天推荐 1–10 个公开 GitHub 仓库（默认 5 个）。你可以浏览今日推荐、回看往日记录，再把选中的项目保存到电脑上的分类 Markdown 收藏中。
 
 公开候选由 GitHub Actions 统一采集，DSH 关闭时也会继续。插件下载公开数据源，再结合你的门槛、收藏和推荐历史，在本地选出榜单。收藏、历史和设置保留在你的电脑上。
 
@@ -23,13 +23,13 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐最多 5 个公开 Git
 通过固定版本的 GitHub 源码安装：
 
 ```sh
-dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.3.2
+dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.4.0
 ```
 
-也可以从 [v0.3.2 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.2) 下载 [dsh-starharbor-0.3.2.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.2/dsh-starharbor-0.3.2.tgz)，再安装下载的文件：
+也可以从 [v0.4.0 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.0) 下载 [dsh-starharbor-0.4.0.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.0/dsh-starharbor-0.4.0.tgz)，再安装下载的文件：
 
 ```sh
-dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.3.2.tgz
+dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.4.0.tgz
 ```
 
 源码位于 [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor)。npm 包尚未发布，社区市场尚未收录。
@@ -46,7 +46,7 @@ dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.3.
 
 ## 推荐规则
 
-每天目标为日推荐 1 个、周推荐 1 个、经典项目 3 个。符合条件的候选不足时，实际数量可以少于 5 个。
+每日目标数量可设为 1–10 个，默认 5 个。设为 1 时优先日推荐；设为 2 时优先日推荐和周推荐；更高数量增加经典项目。默认仍为日推荐 1 个、周推荐 1 个、经典项目 3 个。符合条件的候选不足时，实际数量可能少于设定值。
 
 | 名额 | 默认累计 Star 门槛 | 选择依据 |
 | --- | --- | --- |
@@ -58,9 +58,9 @@ dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.3.
 
 云端排除 fork 和归档仓库。本地选榜时排除已收藏项目和冷却期内的推荐。同一榜单不重复仓库。只要本地收藏状态保留，已收藏项目就长期排除；未收藏项目默认 30 天内不重复推荐。用途分类采用稳定分类 ID 和规则，不单独以编程语言决定分类；分类结果可能有误。
 
-默认在**北京时间 09:00（Asia/Shanghai，UTC+8）**生成本地榜单。DSH 运行时每小时检查云端数据，已有榜单也会继续同步；启动或打开面板时，到期即可同步。到达设定小时后，可直接使用已缓存的当日数据生成榜单，不必等待下一次下载。不补造错过日期的本地榜单。手动「更新数据」会跳过每小时检查间隔，也可提前生成榜单，但不会重选同一数据日期已完成的榜单。新设置从下一次选榜开始生效。
+默认在**北京时间 09:00（Asia/Shanghai，UTC+8）**生成本地榜单。DSH 运行时每小时检查云端数据，已有榜单也会继续同步；启动或打开面板时，到期即可同步。到达设定小时后，可直接使用已缓存的当日数据生成榜单，不必等待下一次下载。不补造错过日期的本地榜单。手动「更新数据」会跳过每小时检查间隔，也可提前生成榜单，但不会重选同一数据日期已完成的榜单。Star 门槛等设置从下一次选榜开始生效；每日推荐数量严格从北京时间次日生效，即使今天还没有榜单也不会提前应用。同一天多次修改以最后保存的数量为准；今天已完成的榜单不变。设置界面显示当前数量和待生效日期。
 
-所有设置均为整数。Star 门槛范围为 `0–1,000,000,000`；重复推荐间隔为 `0–3,650` 天；生成小时为 `0–23`。经典项目优先门槛不得低于经典项目最低门槛。
+所有设置均为整数。每日推荐数量范围为 `1–10`，默认 `5`；Star 门槛范围为 `0–1,000,000,000`；重复推荐间隔为 `0–3,650` 天；生成小时为 `0–23`。经典项目优先门槛不得低于经典项目最低门槛。
 
 ### 数据新鲜度与失败处理
 
@@ -105,7 +105,7 @@ dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.3.
 
 ## 常见问题与反馈
 
-**为什么不足 5 个项目？**
+**为什么项目数少于我设定的数量？**
 
 候选数量、Star 门槛、收藏排除和冷却期可能使符合条件的仓库不足。插件显示实际项目和警告。本地调整门槛不会额外请求云端候选。
 

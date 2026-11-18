@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md)
 
-StarHarbor is a DSH sidebar plugin that recommends up to five public GitHub repositories each day. Browse the daily board, revisit previous boards, and save selected projects to a categorized Markdown collection on your computer.
+StarHarbor is a DSH sidebar plugin that recommends 1–10 public GitHub repositories per day (default: 5). Browse the daily board, revisit previous boards, and save selected projects to a categorized Markdown collection on your computer.
 
 Public candidates are collected by GitHub Actions, even while DSH is closed. The plugin downloads the public feed and selects your board locally using your thresholds, saved projects, and recommendation history. Collections, history, and settings stay on your computer.
 
@@ -23,13 +23,13 @@ Requires DSH `>=0.2.2-rc.1 <0.3.0` and Node.js 22 or later. StarHarbor uses nati
 Install from the pinned GitHub source:
 
 ```sh
-dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.3.2
+dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.4.0
 ```
 
-Or download [dsh-starharbor-0.3.2.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.2/dsh-starharbor-0.3.2.tgz) from the [v0.3.2 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.2), then install the downloaded file:
+Or download [dsh-starharbor-0.4.0.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.0/dsh-starharbor-0.4.0.tgz) from the [v0.4.0 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.0), then install the downloaded file:
 
 ```sh
-dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.3.2.tgz
+dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.4.0.tgz
 ```
 
 Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The npm package is not published and community market inclusion is pending.
@@ -46,7 +46,7 @@ Saving is explicit; recommendations are never automatically added to your collec
 
 ## Recommendation rules
 
-The target is one daily pick, one weekly pick, and three classics. Fewer than five can appear when there are not enough eligible candidates.
+Choose a daily target from 1 to 10 (default: 5). With one slot, daily picks have priority; with two slots, daily and weekly picks have priority; higher targets add classic projects. The default split remains one daily pick, one weekly pick, and three classics. Fewer projects can appear when there are not enough eligible candidates.
 
 | Slot | Default minimum total stars | Selection rule |
 | --- | --- | --- |
@@ -58,9 +58,9 @@ The cloud collector combines GitHub Trending’s daily and weekly pages with two
 
 The collector excludes forks and archived repositories. Local selection excludes saved projects and repositories in the repeat cooldown. Saved projects remain excluded while their saved state is retained; unsaved recommendations have a default 30-day cooldown. A repository appears only once per board. Stable purpose category IDs use classification rules, rather than programming language alone; classification can be imperfect.
 
-The default board generation hour is **09:00 Asia/Shanghai (Beijing time, UTC+8)**. While DSH runs, it checks for feed updates hourly, including after a board is complete. On startup or panel open, a due sync can run. At or after the chosen hour, a cached current-day feed can produce the board without waiting for another download. The plugin does not reconstruct missed local boards. Manual **Refresh data** bypasses the hourly interval and can generate a board early, but never reshuffles an existing board for that feed date. Settings apply to the next board selection.
+The default board generation hour is **09:00 Asia/Shanghai (Beijing time, UTC+8)**. While DSH runs, it checks for feed updates hourly, including after a board is complete. On startup or panel open, a due sync can run. At or after the chosen hour, a cached current-day feed can produce the board without waiting for another download. The plugin does not reconstruct missed local boards. Manual **Refresh data** bypasses the hourly interval and can generate a board early, but never reshuffles an existing board for that feed date. Threshold settings apply to the next board selection. Recommendation count changes take effect on the next calendar day in Asia/Shanghai, even if today has no board yet. Multiple edits before midnight replace the pending count; today’s completed board is unchanged. Settings show the active count and the pending effective date.
 
-All settings are integers. Star thresholds accept `0–1,000,000,000`; cooldown accepts `0–3,650` days; generation hour accepts `0–23`. The preferred classic threshold must be at least the classic minimum.
+All settings are integers. Daily recommendation count accepts `1–10` (default `5`); Star thresholds accept `0–1,000,000,000`; cooldown accepts `0–3,650` days; generation hour accepts `0–23`. The preferred classic threshold must be at least the classic minimum.
 
 ### Feed freshness and failures
 
@@ -105,7 +105,7 @@ Standard GitHub-hosted Linux runner compute is [free for public repositories](ht
 
 ## FAQ and feedback
 
-**Why are there fewer than five projects?**
+**Why are there fewer projects than my configured target?**
 
 Candidate availability, thresholds, saved exclusions, and cooldown may leave too few eligible repositories. The plugin shows available projects and warnings. A local threshold change does not request additional cloud candidates.
 

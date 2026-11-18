@@ -37,10 +37,13 @@ window.__ModuleLoader__.load({
       source_repository: 'Repository metadata', source_refresh: 'Data refresh',
       error_invalid_settings: 'Settings are invalid. Check the fields below.', error_invalid_id: 'The repository ID is invalid. Refresh data and try again.', error_not_recommended: 'This repository is not currently available to save. Refresh recommendations and try again.', error_request_failed: 'The request did not complete. Please retry.', error_http_error: 'The service request failed. Please retry.', error_collection_failed: 'Collection failed. You can retry later.', retry: 'Retry loading', retryAt: 'Try again after {time}.',
     });
+    Object.assign(dictionaries.zh, { subtitle: '每天发现值得收藏的 GitHub 项目', recommendationCount: '每日推荐数量（1–10 个）', countHelp: '默认 5 个；修改后从北京时间次日生效，今天的推荐保持不变。候选不足时可能少于设定数量。', countActive: '当前生效：每天最多 {count} 个', countPending: '新数量：每天最多 {count} 个，将于 {date}（北京时间）生效。' });
+    Object.assign(dictionaries.en, { subtitle: 'Daily GitHub projects worth keeping', recommendationCount: 'Daily recommendations (1–10)', countHelp: 'Default: 5. Changes take effect on the next calendar day in Asia/Shanghai. Today stays unchanged; fewer eligible candidates may be available.', countActive: 'Currently active: up to {count} per day', countPending: 'Up to {count} per day starting {date} (Asia/Shanghai).' });
     const categoryIds = ['ai', 'devtools', 'automation', 'data', 'infrastructure', 'web', 'apps', 'learning', 'resources', 'general'];
     const sourceCodes = ['daily_gain', 'weekly_gain', 'trending_daily', 'trending_weekly', 'classic'];
-    const settingKeys = ['dailyMin', 'weeklyMin', 'classicMin', 'preferredMin', 'cooldownDays', 'hour'];
-    const settingMax = key => key === 'hour' ? 23 : key === 'cooldownDays' ? 3650 : 1000000000;
+    const settingKeys = ['recommendationCount', 'dailyMin', 'weeklyMin', 'classicMin', 'preferredMin', 'cooldownDays', 'hour'];
+    const settingMin = key => key === 'recommendationCount' ? 1 : 0;
+    const settingMax = key => key === 'recommendationCount' ? 10 : key === 'hour' ? 23 : key === 'cooldownDays' ? 3650 : 1000000000;
     const settingsDraft = settings => Object.fromEntries(settingKeys.map(key => [key, settings?.[key] == null ? '' : String(settings[key])]));
     const css = `
 .sh-page,.sh-page *{box-sizing:border-box}
@@ -273,7 +276,7 @@ window.__ModuleLoader__.load({
           for (const key of settingKeys) {
             const raw = draft[key] ?? '';
             const value = /^\d+$/.test(raw) ? Number(raw) : NaN;
-            if (!Number.isSafeInteger(value) || value < 0 || value > settingMax(key)) validation[key] = t('validationRange', { min: 0, max: fmt(settingMax(key)) });
+            if (!Number.isSafeInteger(value) || value < settingMin(key) || value > settingMax(key)) validation[key] = t('validationRange', { min: settingMin(key), max: fmt(settingMax(key)) });
             else parsedSettings[key] = value;
           }
           if (!validation.classicMin && !validation.preferredMin && parsedSettings.preferredMin < parsedSettings.classicMin) validation.preferredMin = t('validationPreferred');
@@ -298,12 +301,14 @@ window.__ModuleLoader__.load({
               event.preventDefault();
               if (busy || !dirty || hasValidation) return;
               call({ action: 'settings', settings: parsedSettings });
-            } }, h('p', { className: 'sh-muted' }, t('configNote')), ...settingKeys.map(field => {
+            } }, h('p', { className: 'sh-muted' }, t('configNote')),
+              h('p', { className: 'sh-muted', role: 'status' }, t('countActive', { count: state.countSchedule?.activeCount ?? 5 }), state.countSchedule?.pendingCount != null ? h('span', { style: { display: 'block' } }, t('countPending', { count: state.countSchedule.pendingCount, date: state.countSchedule.effectiveDate })) : null), ...settingKeys.map(field => {
               const id = `${instanceId}-setting-${field}`;
               return h('div', { className: 'sh-field', key: field }, h('label', { htmlFor: id }, t(field)),
                 h('div', { className: 'sh-field-control' }, h('input', { id, className: 'sh-input', type: 'text', inputMode: 'numeric', required: true, value: draft[field] ?? '', 'aria-invalid': Boolean(validation[field]), 'aria-describedby': validation[field] ? `${id}-error` : undefined,
                   onChange: event => { draftValues.current = { ...draftValues.current, [field]: event.target.value }; setDraft(draftValues.current); } })),
-                validation[field] ? h('span', { id: `${id}-error`, className: 'sh-field-error' }, validation[field]) : null);
+                validation[field] ? h('span', { id: `${id}-error`, className: 'sh-field-error' }, validation[field]) : null,
+                field === 'recommendationCount' ? h('span', { className: 'sh-muted', style: { gridColumn: '1 / -1', fontSize: '14px' } }, t('countHelp')) : null);
             }), h('span', { className: 'sh-muted', role: 'status' }, hasValidation ? t('validationCount', { count: Object.keys(validation).length }) : t(dirty ? 'unsaved' : 'unchanged')),
               h('button', { className: 'sh-btn sh-primary', disabled: busy || !dirty || hasValidation, type: 'submit' }, t(settingsSaving ? 'settingsSaving' : 'submit')), pathView());
             return h(React.Fragment, null,

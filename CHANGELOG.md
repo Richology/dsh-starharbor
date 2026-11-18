@@ -1,5 +1,12 @@
 # Changelog / 更新记录
 
+## v0.4.0 — 2026-11-18
+
+- Configure 1–10 daily recommendations, default 5. Count changes take effect the next Asia/Shanghai calendar day, including before the first board. Preserve today’s selection and show active/pending counts in Settings.
+- Add boundary, midnight, restart, repeated-edit and saved-exclusion regressions. All 150 automated checks pass, including an independent audit that caught and verified the fix for a future-dated feed applying tomorrow’s count before midnight. Existing settings and collections remain compatible.
+- 每日推荐数量可设为 1–10 个，默认 5 个。修改严格于北京时间次日生效，今天未生成榜单时也不提前应用；设置页显示当前数量和生效日期。
+- 补充数量边界、跨午夜、重启、多次修改和收藏排除回归，兼容旧设置与收藏。
+
 ## v0.3.2 — 2026-11-18
 
 - Fix repeated local feed timeouts when macOS uses a system HTTP/HTTPS proxy but Node requests connect directly. Use a scoped Undici dispatcher honoring explicit proxy/NO_PROXY environment first, then manual macOS system proxy and bypass rules. Never change the global dispatcher or bypass a selected proxy on failure.
