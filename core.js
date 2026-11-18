@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { categoryLabel, classifyCategory, projectBoard, projectRepo, sourceCode, warningDetail } from './domain.js';
+import { validateFeed, selectFeedBoard } from './feed.js';
 
 const DEFAULTS = Object.freeze({ dailyMin: 5000, weeklyMin: 10000, classicMin: 30000, preferredMin: 50000, cooldownDays: 30, hour: 9 });
 const locks = new Map();
@@ -49,13 +50,20 @@ function validSettings(patch, current) {
 }
 const escapeMD = text => String(text ?? '').replace(/[\r\n]+/g, ' ').replace(/[\\`*_[\]<>]/g, '\\$&');
 
-/** Local-only storage, native fetch, no automatic scheduler or automatic collection. */
-export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(), enrich, refreshTimeoutMs = 120000, signal } = {}) {
+/** Local-only storage, optional public feed sync, and no automatic scheduler. */
+export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(), enrich, refreshTimeoutMs = 120000, feedUrl, feedTimeoutMs = 20000, signal } = {}) {
   if (typeof dataDir !== 'string' || !dataDir) throw new TypeError('dataDir 必填');
   const root = path.resolve(dataDir);
   const statePath = path.join(root, 'state.json');
   const collectionPath = path.join(root, 'GitHub收藏.md');
   if (!Number.isSafeInteger(refreshTimeoutMs) || refreshTimeoutMs < 1) throw new RangeError('refreshTimeoutMs must be a positive integer');
+  const cloud = feedUrl !== undefined;
+  if (cloud) {
+    if (typeof feedUrl !== 'string' || !feedUrl) throw new TypeError('feedUrl must be an HTTP(S) URL without credentials');
+    const url = new URL(feedUrl);
+    if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) throw new TypeError('feedUrl must be an HTTP(S) URL without credentials');
+    if (!Number.isSafeInteger(feedTimeoutMs) || feedTimeoutMs < 1 || feedTimeoutMs > 20000) throw new RangeError('feedTimeoutMs must be an integer from 1 to 20000');
+  }
   const clock = () => new Date(now());
   let deadline = Infinity;
   let budgetExpired = false;
@@ -90,7 +98,100 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
     }
   }
   const persist = state => atomic(statePath, JSON.stringify(state, null, 2) + '\n', signal);
-  const view = state => clone({ settings: state.settings, today: state.today, history: state.history, saved: state.saved, collectionPath, lastError: state.lastError });
+  function cachedFeed(state) {
+    if (!cloud || state.feed?.url !== feedUrl || !state.feedCache) return null;
+    try { return validateFeed(state.feedCache, { now: clock() }); } catch { return null; }
+  }
+  const feedFresh = feed => feed && feed.date === dateKey(clock()) && clock().getTime() - Date.parse(feed.generatedAt) <= 36 * 3600000;
+  function feedView(state) {
+    const feed = cachedFeed(state);
+    const metadata = state.feed?.url === feedUrl ? state.feed : {};
+    const checked = Date.parse(metadata.lastCheckedAt);
+    return {
+      url: feedUrl, lastCheckedAt: metadata.lastCheckedAt || null, lastSuccessAt: metadata.lastSuccessAt || null,
+      generatedAt: feed?.generatedAt || null, date: feed?.date || null,
+      status: feed ? feedFresh(feed) ? 'fresh' : 'stale' : 'unavailable', candidateCount: feed?.repos.length || 0,
+      nextSyncAt: Number.isFinite(checked) ? new Date(checked + 3600000).toISOString() : null,
+      error: metadata.error || null
+    };
+  }
+  const view = state => clone({ settings: state.settings, today: state.today, history: state.history, saved: state.saved, collectionPath, lastError: state.lastError,
+    ...(cloud ? { feed: feedView(state) } : {}) });
+  async function requestFeed() {
+    const timeLeft = remaining();
+    const budget = Math.min(feedTimeoutMs, timeLeft);
+    const controller = new AbortController();
+    let timer;
+    let cancel;
+    let stop;
+    const stopped = new Promise((_, reject) => { stop = reject; });
+    cancel = () => { controller.abort(signal.reason); stop(signal.reason); };
+    signal?.addEventListener('abort', cancel, { once: true });
+    try {
+      remaining();
+      timer = setTimeout(() => {
+        const error = timeLeft <= feedTimeoutMs ? timeoutError() : Object.assign(new Error('Cloud feed request timed out'), { code: 'feed_timeout' });
+        controller.abort(error);
+        stop(error);
+      }, budget);
+      const response = await Promise.race([
+        Promise.resolve().then(() => fetchImpl(feedUrl, { signal: controller.signal, credentials: 'omit', redirect: 'error', referrerPolicy: 'no-referrer', headers: { Accept: 'application/json' } })),
+        stopped
+      ]);
+      if (!response.ok) throw Object.assign(new Error(`Cloud feed HTTP ${response.status}`), { code: 'feed_http', httpStatus: response.status });
+      let value;
+      try { value = await Promise.race([response.json(), stopped]); }
+      catch (error) {
+        if (controller.signal.aborted || signal?.aborted) throw error;
+        throw Object.assign(new Error(`Invalid cloud feed JSON: ${error.message}`), { code: 'feed_invalid' });
+      }
+      try { return validateFeed(value, { now: clock() }); }
+      catch (error) { throw Object.assign(new Error(`Invalid cloud feed: ${error.message}`), { code: 'feed_invalid' }); }
+    } finally { clearTimeout(timer); signal?.removeEventListener('abort', cancel); }
+  }
+  async function syncCloud(state, { force, snapshotOnly }) {
+    let feed = cachedFeed(state);
+    const previous = state.feed?.url === feedUrl ? state.feed : {};
+    const checked = Date.parse(previous.lastCheckedAt);
+    const elapsed = clock().getTime() - checked;
+    const needsFetch = force || !Number.isFinite(checked) || elapsed < 0 || elapsed >= 3600000;
+    if (needsFetch) {
+      const at = clock().toISOString();
+      state.feed = { url: feedUrl, lastCheckedAt: at, lastSuccessAt: previous.lastSuccessAt || null, error: null };
+      try {
+        feed = await requestFeed();
+        signal?.throwIfAborted();
+        state.feedCache = feed;
+        state.feed.lastSuccessAt = clock().toISOString();
+        state.lastError = null;
+      } catch (error) {
+        signal?.throwIfAborted();
+        const code = error.code === 'refresh_timeout' ? 'refresh_timeout' : ['feed_timeout', 'feed_http', 'feed_invalid'].includes(error.code) ? error.code : 'feed_fetch_failed';
+        state.lastError = { code, message: error.message || String(error), at: clock().toISOString(), httpStatus: error.httpStatus || null, retryAt: null,
+          details: [{ code, params: { message: error.message || String(error), ...(error.httpStatus ? { httpStatus: error.httpStatus } : {}) } }] };
+        state.feed.error = clone(state.lastError);
+      }
+    }
+    // A cached feed can become due for selection before the next hourly fetch.
+    const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Shanghai', hour: '2-digit', hourCycle: 'h23' }).format(clock()));
+    if (feed && !snapshotOnly && (force || hour >= state.settings.hour)) {
+      const sameDay = state.history.find(board => board.date === feed.date);
+      if (sameDay && (!state.today || state.today.date <= feed.date)) state.today = clone(sameDay);
+      else if (!sameDay && (feedFresh(feed) || !state.today)) {
+        const board = selectFeedBoard(feed, { settings: state.settings, history: state.history, saved: state.saved, now: clock() });
+        if (!feedFresh(feed)) {
+          board.warnings ||= [];
+          board.warningDetails ||= [];
+          appendWarnings(board, ['Cloud feed is stale; displaying recommendations for the feed date.'], [{ code: 'feed_stale', params: { date: feed.date, generatedAt: feed.generatedAt } }]);
+        }
+        state.today = board;
+        state.history.push(clone(board));
+      }
+    }
+    signal?.throwIfAborted();
+    await persist(state);
+    return view(state);
+  }
   function appendWarnings(board, messages, details = []) {
     for (let i = 0; i < messages.length; i++) {
       if (board.warnings.includes(messages[i])) continue;
@@ -316,10 +417,11 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
         signal?.throwIfAborted();
         const state = await load();
         signal?.throwIfAborted();
-        if (!snapshotOnly && !force && !state.lastError && state.today?.date === dateKey(clock())) return view(state);
-        deadline = Date.now() + refreshTimeoutMs;
+        if (!cloud && !snapshotOnly && !force && !state.lastError && state.today?.date === dateKey(clock())) return view(state);
+        deadline = Date.now() + (cloud ? Math.min(refreshTimeoutMs, 120000) : refreshTimeoutMs);
         budgetExpired = false;
         try {
+          if (cloud) return await syncCloud(state, { force, snapshotOnly });
           const { board, failures } = await collect(state);
           const sameDay = state.history.find(item => item.date === board.date);
           if (snapshotOnly) {

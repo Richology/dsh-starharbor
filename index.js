@@ -3,6 +3,7 @@ import { createHarbor } from './core.js';
 
 export const name = 'starharbor';
 export const inject = ['connection', 'tools', 'workingDirectory'];
+export const DEFAULT_FEED_URL = 'https://raw.githubusercontent.com/Richology/dsh-starharbor/data/latest.json';
 
 // Translate the repository description without turning README banners into a summary.
 export async function translateDescription(repo, translator, lifecycleSignal) {
@@ -22,7 +23,7 @@ export async function translateDescription(repo, translator, lifecycleSignal) {
 export function apply(ctx, config = {}) {
   const dataDir = path.resolve(config.dataDir || process.env.STARHARBOR_DIR || path.join(ctx.workingDirectory.defaultDirectory, 'StarHarbor'));
   const abort = new AbortController();
-  const harbor = createHarbor({ dataDir, signal: abort.signal, enrich: repo => translateDescription(repo, ctx.get('translator'), abort.signal) });
+  const harbor = createHarbor({ dataDir, signal: abort.signal, feedUrl: config.feedUrl || process.env.STARHARBOR_FEED_URL || DEFAULT_FEED_URL });
   async function operate(input) {
     if (!input || typeof input !== 'object' || Array.isArray(input)) throw Object.assign(new Error('Expected an action object'), { code: 'invalid_request' });
     switch (input.action) {
@@ -66,11 +67,11 @@ export function apply(ctx, config = {}) {
   }));
   ctx.effect(() => ctx.tools.register({
     name: 'starharbor',
-    description: 'Read StarHarbor daily GitHub recommendations, refresh candidates, save a recommended repository to the local categorized Markdown collection, or change ranking thresholds. Returns today’s recommendations, the last 7 daily boards, the last 50 saved repositories, total counts and collection path. Growth figures are null without complete observation history.',
+    description: 'Read StarHarbor daily GitHub recommendations and cloud feed freshness, synchronize public candidates, save a recommended repository to local categorized Markdown, or change local ranking thresholds. Returns today, last 7 boards, last 50 saved repos, totals and collection path. Collections and preferences stay local; growth is null without complete observations.',
     parameters: { type: 'object', properties: {
       action: { type: 'string', enum: ['status', 'refresh', 'save', 'settings'] },
       id: { type: 'integer', description: 'Repository id from status; required for save.' },
-      force: { type: 'boolean', description: 'Refresh sources even when today is already generated. Today’s selection remains stable.' },
+      force: { type: 'boolean', description: 'Synchronize the cloud feed now, bypassing the hourly check. May generate a board before the chosen hour; an existing same-day selection stays stable.' },
       settings: { type: 'object', description: 'Fields to update; omitted fields stay unchanged.', properties: {
         dailyMin: { type: 'integer' }, weeklyMin: { type: 'integer' }, classicMin: { type: 'integer' }, preferredMin: { type: 'integer' }, cooldownDays: { type: 'integer' }, hour: { type: 'integer', description: 'Daily generation hour, 0–23 in Asia/Shanghai.' },
       }, additionalProperties: false },
@@ -85,7 +86,6 @@ export function apply(ctx, config = {}) {
   ctx.effect(() => {
     let running = false;
     let nextAttempt = 0;
-    let midnightKey = '';
     async function tick() {
       if (running || abort.signal.aborted || Date.now() < nextAttempt) return;
       running = true;
@@ -94,13 +94,12 @@ export function apply(ctx, config = {}) {
         const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now).map(p => [p.type, p.value]));
         const date = `${parts.year}-${parts.month}-${parts.day}`;
         const state = await harbor.status();
-        const retryAt = Date.parse(state.lastError?.retryAt || '');
-        if (Number.isFinite(retryAt) && retryAt > Date.now()) { nextAttempt = retryAt; return; }
+        const syncDue = !state.feed?.nextSyncAt || Date.parse(state.feed.nextSyncAt) <= Date.now();
+        const boardDue = Number(parts.hour) >= state.settings.hour && state.today?.date !== date;
+        // Synchronize on startup/hourly, and use a cached current-day feed at the user's chosen hour.
+        // Midnight observations are collected by the cloud workflow, even while DSH is closed.
         let result;
-        if (parts.hour === '00' && Number(parts.minute) <= 4 && midnightKey !== date) {
-          result = await harbor.refresh({ force: true, snapshotOnly: true });
-          if (!result.lastError) midnightKey = date;
-        } else if (Number(parts.hour) >= state.settings.hour && state.today?.date !== date) result = await harbor.refresh();
+        if (syncDue || boardDue) result = await harbor.refresh();
         nextAttempt = result?.lastError ? Math.max(Date.now() + 15 * 60000, Date.parse(result.lastError.retryAt || '') || 0) : Date.now() + 60000;
       } catch (error) {
         nextAttempt = Date.now() + 15 * 60000;
