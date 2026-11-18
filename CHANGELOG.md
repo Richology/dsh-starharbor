@@ -1,5 +1,10 @@
 # Changelog / 更新记录
 
+## v0.4.2 — 2026-11-18
+
+- Add a copy-link button in the upper-right corner of every repository card in Today, History and Collection. Copy the repository URL with per-card feedback and a selectable URL if clipboard access fails.
+- 每张仓库卡片右上角新增复制链接按钮，适用于今日推荐、往日发现和收藏；复制成功显示「已复制」，失败时提供可手动复制的地址。
+
 ## v0.4.1 — 2026-11-18
 
 - Add **Open containing folder** at the top of Collection and beside the collection path. Opens the configured collection directory in the host computer’s file manager; shows an error with a copy-path fallback if opening fails.

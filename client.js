@@ -41,6 +41,8 @@ window.__ModuleLoader__.load({
     Object.assign(dictionaries.en, { subtitle: 'Daily GitHub projects worth keeping', recommendationCount: 'Daily recommendations (1–10)', countHelp: 'Default: 5. Changes take effect on the next calendar day in Asia/Shanghai. Today stays unchanged; fewer eligible candidates may be available.', countActive: 'Currently active: up to {count} per day', countPending: 'Up to {count} per day starting {date} (Asia/Shanghai).' });
     Object.assign(dictionaries.zh, { openFolder: '打开所在文件夹', folderOpened: '已打开收藏文件所在文件夹', error_collection_open_failed: '无法打开文件夹，请复制路径后手动打开。' });
     Object.assign(dictionaries.en, { openFolder: 'Open containing folder', folderOpened: 'Opened the collection folder', error_collection_open_failed: 'Could not open the folder. Copy the path and open it manually.' });
+    Object.assign(dictionaries.zh, { copyRepo: '复制仓库链接', repoCopied: '已复制', repoCopyFailed: '复制失败，请手动复制链接：' });
+    Object.assign(dictionaries.en, { copyRepo: 'Copy repository link', repoCopied: 'Copied', repoCopyFailed: 'Copy failed. Copy this link manually:' });
     const categoryIds = ['ai', 'devtools', 'automation', 'data', 'infrastructure', 'web', 'apps', 'learning', 'resources', 'general'];
     const sourceCodes = ['daily_gain', 'weekly_gain', 'trending_daily', 'trending_weekly', 'classic'];
     const settingKeys = ['recommendationCount', 'dailyMin', 'weeklyMin', 'classicMin', 'preferredMin', 'cooldownDays', 'hour'];
@@ -70,6 +72,7 @@ window.__ModuleLoader__.load({
 .sh-sectionTitle h2{font-size:20px;margin:0}
 .sh-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
 .sh-card{min-width:0;border:1px solid var(--dsw-alias-border-l1);border-radius:14px;padding:24px;background:var(--dsw-alias-bg-layer-1);display:flex;flex-direction:column;gap:14px}
+.sh-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.sh-card-top .sh-badges{min-width:0;flex:1}.sh-copy-link{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:6px 9px}.sh-copy-note{font-size:13px;margin:0;overflow-wrap:anywhere;user-select:text}
 .sh-card h3{font-size:24px;line-height:1.35;letter-spacing:-.3px;margin:0;overflow-wrap:anywhere;font-weight:650}
 .sh-card a{color:var(--dsw-alias-label-primary);text-decoration:none}.sh-card h3 a:hover{text-decoration:underline;text-underline-offset:4px}
 .sh-summary{font-size:16px;line-height:1.65;margin:0;max-width:85ch;overflow-wrap:anywhere}
@@ -131,6 +134,17 @@ window.__ModuleLoader__.load({
           const [query, setQuery] = React.useState('');
           const [category, setCategory] = React.useState('');
           const [copyState, setCopyState] = React.useState('');
+          const [repoCopies, setRepoCopies] = React.useState({});
+          async function copyRepo(repo) {
+            const life = lifecycle.current;
+            setRepoCopies(previous => ({ ...previous, [repo.id]: 'copying' }));
+            try {
+              await navigator.clipboard.writeText(repo.url);
+              if (isLive(life)) setRepoCopies(previous => ({ ...previous, [repo.id]: 'copied' }));
+            } catch {
+              if (isLive(life)) setRepoCopies(previous => ({ ...previous, [repo.id]: 'failed' }));
+            }
+          }
           const queue = React.useRef(Promise.resolve());
           const lifecycle = React.useRef(null);
           const saveIds = React.useRef(new Set());
@@ -264,10 +278,14 @@ window.__ModuleLoader__.load({
             const collected = savedIds.has(repo.id);
             const pending = pendingSaves.has(repo.id);
             return h('article', { key: repo.id, className: 'sh-card', 'aria-busy': pending },
-              h('div', { className: 'sh-badges' },
+              h('div', { className: 'sh-card-top' }, h('div', { className: 'sh-badges' },
                 h('span', { className: 'sh-badge' }, t(`source_${sourceCode(repo.sourceCode)}`)),
                 h('span', { className: 'sh-badge' }, t(`category_${categoryId(repo)}`)),
                 repo.language ? h('span', { className: 'sh-badge' }, repo.language) : null),
+                h('button', { type: 'button', className: `sh-btn sh-copy-link${repoCopies[repo.id] === 'copied' ? ' sh-success' : ''}`, title: t('copyRepo'), 'aria-label': `${t('copyRepo')}: ${repo.name}`, disabled: repoCopies[repo.id] === 'copying', onClick: () => copyRepo(repo) },
+                  h('svg', { width: 17, height: 17, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, 'aria-hidden': true }, h('rect', { x: 8, y: 8, width: 12, height: 12, rx: 2 }), h('path', { d: 'M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3' })),
+                  h('span', { role: 'status' }, repoCopies[repo.id] === 'copied' ? t('repoCopied') : ''))),
+              repoCopies[repo.id] === 'failed' ? h('p', { role: 'alert', className: 'sh-copy-note sh-error' }, t('repoCopyFailed'), ' ', h('code', null, repo.url)) : null,
               h('h3', null, h('a', { href: repo.url, target: '_blank', rel: 'noopener noreferrer' }, repo.name)),
               h('p', { className: 'sh-summary' }, language === 'zh' && !translated && description ? h('span', { className: 'sh-fallback' }, t('fallback')) : null, summary || t('noDescription')),
               translated && description && summary !== description ? h('details', { className: 'sh-muted' }, h('summary', null, t('original')), h('p', { className: 'sh-summary' }, description)) : null,
