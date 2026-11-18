@@ -12,7 +12,7 @@ Each card shows the repository’s original description, total stars, recommenda
 
 ![StarHarbor Today page in English](docs/images/today-en.png)
 
-Captured from the installed v0.2.0 interface and cropped to exclude DSH’s sidebar and private information. These screenshots predate the v0.3.0 cloud status display.
+Captured from the installed v0.3.0 interface after a successful sync with the live public feed, and cropped to exclude DSH’s sidebar and private information.
 
 [Chinese interface screenshot](docs/images/today-zh.png)
 
@@ -20,19 +20,19 @@ Captured from the installed v0.2.0 interface and cropped to exclude DSH’s side
 
 Requires DSH `>=0.2.2-rc.1 <0.3.0` and Node.js 22 or later. StarHarbor uses native ESM, has no third-party runtime dependencies, and runs no installation scripts.
 
-This checkout documents **v0.3.0, not yet released**. Install a local checkout to try it now:
-
-```sh
-dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor
-```
-
-Once the `v0.3.0` tag is published, GitHub source installation will use:
+Install from the pinned GitHub source:
 
 ```sh
 dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.3.0
 ```
 
-Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The npm package is not published and community market inclusion is pending. A v0.3.0 tag or packaged release is not yet advertised as available.
+Or download [dsh-starharbor-0.3.0.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.0/dsh-starharbor-0.3.0.tgz) from the [v0.3.0 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.0), then install the downloaded file:
+
+```sh
+dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.3.0.tgz
+```
+
+Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The npm package is not published and community market inclusion is pending.
 
 After installation:
 

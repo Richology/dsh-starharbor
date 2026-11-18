@@ -1,6 +1,6 @@
 # Changelog / 更新记录
 
-## v0.3.0 — Unreleased / 尚未发布
+## v0.3.0 — 2026-11-18
 
 ### Cloud collection and local selection / 云端采集与本地选榜
 
@@ -28,9 +28,9 @@ The public workflow is scheduled at 00:02 and 04:17/08:17/12:17/16:17/20:17 Asia
 
 公开工作流计划于北京时间 00:02，以及 04:17、08:17、12:17、16:17、20:17 运行。公开仓库的标准托管 Linux runner 计算免费，定时执行可能延迟或丢弃。只有各仓库实际落在午夜前后 5 分钟内的观测才算端点。维护者可手动触发，详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-This entry describes unreleased v0.3.0 work. The v0.3.0 tag and release attachment have not yet been verified as published. README screenshots still show the real v0.2.0 interface pending replacement. npm publication and community market inclusion remain pending. DSH compatibility remains `>=0.2.2-rc.1 <0.3.0`; Node.js remains `>=22`.
+The first cloud workflow published 319 validated public candidates, and the installed plugin synchronized them successfully. README screenshots show the real v0.3.0 cloud interface. npm publication and community market inclusion remain pending. DSH compatibility remains `>=0.2.2-rc.1 <0.3.0`; Node.js remains `>=22`.
 
-本节为 v0.3.0 未发布变更，尚未核实对应 tag 与 Release 附件已发布。README 暂保留真实 v0.2.0 截图，待重新拍摄。npm 发布和社区市场收录仍未完成。DSH 兼容范围仍为 `>=0.2.2-rc.1 <0.3.0`，Node.js 仍要求 `>=22`。
+首次云端工作流已发布 319 个通过验证的公开候选，本机插件已成功同步。README 截图已更新为真实 v0.3.0 云端界面。npm 发布和社区市场收录仍未完成。DSH 兼容范围仍为 `>=0.2.2-rc.1 <0.3.0`，Node.js 仍要求 `>=22`。
 
 ## v0.2.0 — 2026-11-18
 

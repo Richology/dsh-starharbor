@@ -12,7 +12,7 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐最多 5 个公开 Git
 
 ![StarHarbor 星港中文今日推荐界面](docs/images/today-zh.png)
 
-截图来自已安装的 v0.2.0 真实界面，已裁掉 DSH 侧栏和私人信息。截图尚未包含 v0.3.0 的云端数据状态显示。
+截图来自已安装的 v0.3.0 真实界面，拍摄于成功同步线上公开候选数据之后，已裁掉 DSH 侧栏和私人信息。
 
 [查看英文界面截图](docs/images/today-en.png)
 
@@ -20,19 +20,19 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐最多 5 个公开 Git
 
 需要 DSH `>=0.2.2-rc.1 <0.3.0` 和 Node.js 22 或更高版本。插件使用原生 ESM，没有第三方运行依赖，也不运行安装脚本。
 
-本文说明的 **v0.3.0 尚未发布**。目前可安装本地检出目录试用：
-
-```sh
-dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor
-```
-
-待 `v0.3.0` tag 实际发布后，GitHub 源码安装命令为：
+通过固定版本的 GitHub 源码安装：
 
 ```sh
 dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.3.0
 ```
 
-源码位于 [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor)。npm 包尚未发布，社区市场尚未收录；目前不宣称 v0.3.0 tag 或预打包 Release 已可用。
+也可以从 [v0.3.0 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.3.0) 下载 [dsh-starharbor-0.3.0.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.3.0/dsh-starharbor-0.3.0.tgz)，再安装下载的文件：
+
+```sh
+dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.3.0.tgz
+```
+
+源码位于 [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor)。npm 包尚未发布，社区市场尚未收录。
 
 安装后：
 
