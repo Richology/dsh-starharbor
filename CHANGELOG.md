@@ -1,5 +1,10 @@
 # Changelog / 更新记录
 
+## v0.4.3 — 2026-11-18
+
+- New Markdown saves include an explicit `GitHub：https://github.com/owner/repo` paragraph, alongside the clickable repository heading. Preserve manual notes and idempotent saves. Existing user files are not automatically rewritten on installation.
+- 新增收藏时，在可点击仓库名之外单独显示完整 GitHub 地址。保留手写笔记和重复收藏保护；升级本身不会自动重写已有文档。
+
 ## v0.4.2 — 2026-11-18
 
 - Add a copy-link button in the upper-right corner of every repository card in Today, History and Collection. Copy the repository URL with per-card feedback and a selectable URL if clipboard access fails.

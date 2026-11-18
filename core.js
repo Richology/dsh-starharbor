@@ -504,7 +504,7 @@ export function createHarbor({ dataDir, fetchImpl = fetch, now = () => new Date(
       const alreadySaved = state.saved.some(item => item.id === id);
       if (!content.includes(marker)) {
         const heading = `## ${repo.category}`;
-        const block = `${marker}\n- [${escapeMD(repo.name)}](${repo.url}) · ★ ${repo.stars.toLocaleString('en-US')}\n  ${escapeMD(repo.summary)}\n`;
+        const block = `${marker}\n- [${escapeMD(repo.name)}](${repo.url}) · ★ ${repo.stars.toLocaleString('en-US')}\n\n  GitHub：${repo.url}\n\n  ${escapeMD(repo.summary)}\n`;
         const lines = content.split('\n');
         const index = lines.findIndex(line => line.trim() === heading);
         if (index >= 0) lines.splice(index + 1, 0, '', block);
