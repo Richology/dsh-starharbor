@@ -20,7 +20,13 @@ Captured from the installed v0.3.0 interface after a successful sync with the li
 
 Requires DSH `>=0.2.2-rc.1 <0.3.0` and Node.js 22 or later. StarHarbor uses native ESM and the pinned Undici HTTP client; it runs no installation scripts. Public-feed requests honor standard HTTP_PROXY/HTTPS_PROXY/ALL_PROXY and NO_PROXY variables, with lowercase variants taking precedence. On macOS, manual HTTP/HTTPS system proxies are used when no explicit proxy environment is set, including bypass rules. PAC-only and SOCKS-only system configurations are not automatically resolved; use an HTTP proxy environment variable in those cases. Proxy settings are read locally and never uploaded; the plugin does not modify system or global Node networking.
 
-Install from the pinned GitHub source:
+Install the prebuilt npm package:
+
+```sh
+dsh plugin --profile <profile-name> add dsh-starharbor@0.4.3
+```
+
+Or install from the pinned GitHub source:
 
 ```sh
 dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.4.3
@@ -32,7 +38,7 @@ Or download [dsh-starharbor-0.4.3.tgz](https://github.com/Richology/dsh-starharb
 dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.4.3.tgz
 ```
 
-Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The npm package is not published and community market inclusion is pending.
+Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The [npm package](https://www.npmjs.com/package/dsh-starharbor) is published. The community catalog listing has been accepted; regional market clients may lag until their catalog source refreshes.
 
 After installation:
 
