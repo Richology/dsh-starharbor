@@ -1,5 +1,10 @@
 # Changelog / 更新记录
 
+## v0.4.5 — 2026-11-19
+
+- Redesign both README introductions with a centered brand wordmark, title, tagline, language links, badges, install links and a full-width product screenshot. Keep each language's three supplied screenshots and include the new wordmark in the npm package.
+- 中英文 README 首屏改为居中字标、产品名称、一句话介绍、语言切换、状态徽章和安装入口，下接大幅产品截图；分别保留用户提供的三张对应语言截图，新字标随 npm 包一起发布。
+
 ## v0.4.4 — 2026-11-19
 
 - Replace older screenshots with the maintainer-provided Today, Collection and Settings screenshots: English in the English README, Simplified Chinese in the Chinese README. Language links work from npm as well as GitHub.

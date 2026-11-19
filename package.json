@@ -1,6 +1,6 @@
 {
   "name": "dsh-starharbor",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "dependencies": {
     "undici": "7.30.2"
   },
@@ -39,6 +39,7 @@
     "locale/*.json",
     "icon.svg",
     "assets/icon.png",
+    "assets/readme-wordmark.png",
     "screenshots.json",
     "README.md",
     "README.zh-CN.md",

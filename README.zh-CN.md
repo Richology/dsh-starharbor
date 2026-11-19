@@ -1,6 +1,38 @@
-# StarHarbor 星港
+<div align="center">
 
-[English](https://github.com/Richology/dsh-starharbor/blob/main/README.md)
+<img src="https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.5/assets/readme-wordmark.png" alt="StarHarbor 星港" width="480">
+
+<h1>StarHarbor · 星港</h1>
+
+<hr>
+
+<h3>每天发现高星 GitHub 项目，一键收藏到 Markdown。</h3>
+
+<p>在 DSH 侧边栏浏览每日推荐、每周热点与高星经典。<br>默认每天推荐 5 个项目，收藏保存在你的电脑上。</p>
+
+<p><a href="https://github.com/Richology/dsh-starharbor/blob/main/README.md">English</a> · <strong>简体中文</strong></p>
+
+<p>
+<a href="https://github.com/Richology/dsh-starharbor/stargazers"><img src="https://img.shields.io/github/stars/Richology/dsh-starharbor?style=flat" alt="GitHub Star 数"></a>
+<a href="https://github.com/Richology/dsh-starharbor/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-2f7c67" alt="MIT 许可证"></a>
+<a href="https://github.com/Richology/dsh-starharbor/releases/latest"><img src="https://img.shields.io/github/v/release/Richology/dsh-starharbor?label=release" alt="最新发布版本"></a>
+<img src="https://img.shields.io/badge/Node.js-22%2B-43853d?logo=nodedotjs&logoColor=white" alt="Node.js 22 或更高版本">
+<img src="https://img.shields.io/badge/DSH-sidebar_plugin-397db1" alt="DSH 侧边栏插件">
+</p>
+
+<p><strong><a href="#安装与开始使用">安装使用</a> · <a href="https://www.npmjs.com/package/dsh-starharbor">npm 安装包</a> · <a href="https://github.com/Richology/dsh-starharbor/releases">版本下载</a> · <a href="https://github.com/Richology/dsh-starharbor/issues">反馈问题</a></strong></p>
+
+<p><em>⭐ 如果这个工具对你有帮助，欢迎点个 Star，让更多人发现星港。</em></p>
+
+</div>
+
+![StarHarbor 星港今日推荐界面](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-today.png)
+
+<p align="center"><em>每天发现 GitHub 项目，把值得留存的仓库收进自己的 Markdown。</em></p>
+
+[功能介绍](#功能介绍) · [界面截图](#界面截图) · [开始使用](#安装与开始使用) · [推荐规则](#推荐规则) · [数据与隐私](#隐私网络与本地数据) · [参与贡献](#开发与测试)
+
+## 功能介绍
 
 StarHarbor 星港是 DSH 的侧边栏插件，每天推荐 1–10 个公开 GitHub 仓库（默认 5 个）。你可以浏览今日推荐、回看往日记录，再把选中的项目保存到电脑上的分类 Markdown 收藏中。
 
@@ -10,11 +42,7 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐 1–10 个公开 GitH
 
 ## 界面截图
 
-以下三张截图展示当前中文界面的今日推荐、已收藏和推荐设置。插件也支持英文，界面跟随 DSH 的语言设置。
-
-**今日推荐**
-
-![StarHarbor 星港今日推荐界面](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-today.png)
+上方为中文界面的今日推荐，下方为已收藏和推荐设置。点击 [English](https://github.com/Richology/dsh-starharbor/blob/main/README.md) 可查看对应的三张英文截图。插件界面跟随 DSH 的语言设置。
 
 **已收藏**
 
@@ -31,19 +59,19 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐 1–10 个公开 GitH
 通过 npm 安装预打包版本：
 
 ```sh
-dsh plugin --profile <你的配置名> add dsh-starharbor@0.4.4
+dsh plugin --profile <你的配置名> add dsh-starharbor@0.4.5
 ```
 
 也可以通过固定版本的 GitHub 源码安装：
 
 ```sh
-dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.4.4
+dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.4.5
 ```
 
-也可以从 [v0.4.4 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.4) 下载 [dsh-starharbor-0.4.4.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.4/dsh-starharbor-0.4.4.tgz)，再安装下载的文件：
+也可以从 [v0.4.5 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.5) 下载 [dsh-starharbor-0.4.5.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.5/dsh-starharbor-0.4.5.tgz)，再安装下载的文件：
 
 ```sh
-dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.4.4.tgz
+dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.4.5.tgz
 ```
 
 源码位于 [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor)。[npm 包](https://www.npmjs.com/package/dsh-starharbor)已发布，社区目录也已收录；不同下载地区的市场客户端需等待各自目录源刷新。
