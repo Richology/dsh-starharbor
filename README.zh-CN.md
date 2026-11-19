@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.5/assets/readme-wordmark.png" alt="StarHarbor 星港" width="480">
 
-<h1>StarHarbor · 星港</h1>
+<h1>星港</h1>
 
 <hr>
 
