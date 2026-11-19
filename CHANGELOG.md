@@ -1,5 +1,12 @@
 # Changelog / 更新记录
 
+## v0.4.4 — 2026-11-19
+
+- Replace older screenshots with the maintainer-provided Today, Collection and Settings screenshots: English in the English README, Simplified Chinese in the Chinese README. Language links work from npm as well as GitHub.
+- Declare all six supplied screenshots for the marketplace gallery. Package only these current screenshots; exclude the older review captures. No runtime behavior or user data changes.
+- 英文 README 使用用户提供的三张英文截图，简体中文 README 使用此前提供的三张中文原图；图片位于功能介绍之后、安装说明之前，语言链接同时适用于 GitHub 与 npm。
+- 市场截图列表包含中英六张原图，发布包排除旧版审查截图；不修改插件运行逻辑和用户数据。
+
 ## v0.4.3 — 2026-11-18
 
 - New Markdown saves include an explicit `GitHub：https://github.com/owner/repo` paragraph, alongside the clickable repository heading. Preserve manual notes and idempotent saves. Existing user files are not automatically rewritten on installation.

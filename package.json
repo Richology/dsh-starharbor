@@ -1,15 +1,67 @@
 {
   "name": "dsh-starharbor",
-  "version": "0.4.3",
-  "dependencies": { "undici": "7.30.2" },
+  "version": "0.4.4",
+  "dependencies": {
+    "undici": "7.30.2"
+  },
   "description": "StarHarbor 星港 · Daily GitHub discoveries and Markdown collections for DSH",
   "type": "module",
   "license": "MIT",
-  "engines": { "node": ">=22", "dsh": ">=0.2.2-rc.1 <0.3.0" },
-  "repository": { "type": "git", "url": "https://github.com/Richology/dsh-starharbor.git" },
-  "keywords": ["dsh-plugin", "github", "trending", "stars", "markdown"],
-  "exports": { ".": "./index.js", "./client": "./client.js", "./locale/*.json": "./locale/*.json", "./icon": "./icon.svg" },
-  "files": ["transport.js", "index.js", "core.js", "domain.js", "feed.js", "client.js", "cordis.patch.yml", "locale/*.json", "icon.svg", "assets/icon.png", "screenshots.json", "README.md", "README.zh-CN.md", "CHANGELOG.md", "CONTRIBUTING.md", "qa-audit-report.md", "docs/images/*.png", "LICENSE"],
-  "scripts": { "test": "node --test", "check": "node --check index.js && node --check transport.js && node --check core.js && node --check domain.js && node --check feed.js && node --check client.js && node --check scripts/collect-feed.mjs && node --check scripts/update-cloud.mjs" },
-  "dsh": { "bundle": { "patch": "./cordis.patch.yml" }, "client": { "platform": "web", "immediately": true, "inject": ["@deepseek-ai/dsh-client-ui-layout"] } }
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.2-rc.1 <0.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Richology/dsh-starharbor.git"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "github",
+    "trending",
+    "stars",
+    "markdown"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "transport.js",
+    "index.js",
+    "core.js",
+    "domain.js",
+    "feed.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "assets/icon.png",
+    "screenshots.json",
+    "README.md",
+    "README.zh-CN.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "qa-audit-report.md",
+    "docs/images/market-*.png",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check index.js && node --check transport.js && node --check core.js && node --check domain.js && node --check feed.js && node --check client.js && node --check scripts/collect-feed.mjs && node --check scripts/update-cloud.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout"
+      ]
+    }
+  }
 }

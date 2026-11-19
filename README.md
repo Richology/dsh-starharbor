@@ -1,6 +1,6 @@
 # StarHarbor
 
-[简体中文](README.zh-CN.md)
+[简体中文](https://github.com/Richology/dsh-starharbor/blob/main/README.zh-CN.md)
 
 StarHarbor is a DSH sidebar plugin that recommends 1–10 public GitHub repositories per day (default: 5). Browse the daily board, revisit previous boards, and save selected projects to a categorized Markdown collection on your computer.
 
@@ -10,19 +10,19 @@ Each card shows the repository’s original description, total stars, recommenda
 
 ## Screenshots
 
-The three current screenshots below show the Chinese interface. StarHarbor also supports English and follows DSH’s language setting.
+These screenshots show the English interface. For the same three pages in Simplified Chinese, open [简体中文](https://github.com/Richology/dsh-starharbor/blob/main/README.zh-CN.md#界面截图). The interface follows DSH’s language setting.
 
 **Daily recommendations**
 
-![StarHarbor daily recommendations, Chinese interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-today.png)
+![StarHarbor daily recommendations, English interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.4/docs/images/market-today-en.png)
 
 **Saved collection**
 
-![StarHarbor saved collection, Chinese interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-saved.png)
+![StarHarbor saved collection, English interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.4/docs/images/market-saved-en.png)
 
 **Recommendation settings**
 
-![StarHarbor recommendation settings, Chinese interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-settings.png)
+![StarHarbor recommendation settings, English interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.4/docs/images/market-settings-en.png)
 
 ## Install and get started
 
@@ -31,19 +31,19 @@ Requires DSH `>=0.2.2-rc.1 <0.3.0` and Node.js 22 or later. StarHarbor uses nati
 Install the prebuilt npm package:
 
 ```sh
-dsh plugin --profile <profile-name> add dsh-starharbor@0.4.3
+dsh plugin --profile <profile-name> add dsh-starharbor@0.4.4
 ```
 
 Or install from the pinned GitHub source:
 
 ```sh
-dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.4.3
+dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.4.4
 ```
 
-Or download [dsh-starharbor-0.4.3.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.3/dsh-starharbor-0.4.3.tgz) from the [v0.4.3 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.3), then install the downloaded file:
+Or download [dsh-starharbor-0.4.4.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.4/dsh-starharbor-0.4.4.tgz) from the [v0.4.4 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.4), then install the downloaded file:
 
 ```sh
-dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.4.3.tgz
+dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.4.4.tgz
 ```
 
 Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The [npm package](https://www.npmjs.com/package/dsh-starharbor) is published. The community catalog listing has been accepted; regional market clients may lag until their catalog source refreshes.
