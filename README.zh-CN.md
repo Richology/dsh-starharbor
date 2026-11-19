@@ -10,11 +10,19 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐 1–10 个公开 GitH
 
 ## 界面截图
 
-![StarHarbor 星港中文今日推荐界面](docs/images/today-zh.png)
+以下三张截图展示当前中文界面的今日推荐、已收藏和推荐设置。插件也支持英文，界面跟随 DSH 的语言设置。
 
-截图来自已安装的 v0.3.0 真实界面，拍摄于成功同步线上公开候选数据之后，已裁掉 DSH 侧栏和私人信息。
+**今日推荐**
 
-[查看英文界面截图](docs/images/today-en.png)
+![StarHarbor 星港今日推荐界面](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-today.png)
+
+**已收藏**
+
+![StarHarbor 星港已收藏界面](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-saved.png)
+
+**推荐设置**
+
+![StarHarbor 星港推荐设置界面](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-settings.png)
 
 ## 安装与开始使用
 

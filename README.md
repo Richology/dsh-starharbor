@@ -10,11 +10,19 @@ Each card shows the repository’s original description, total stars, recommenda
 
 ## Screenshots
 
-![StarHarbor Today page in English](docs/images/today-en.png)
+The three current screenshots below show the Chinese interface. StarHarbor also supports English and follows DSH’s language setting.
 
-Captured from the installed v0.3.0 interface after a successful sync with the live public feed, and cropped to exclude DSH’s sidebar and private information.
+**Daily recommendations**
 
-[Chinese interface screenshot](docs/images/today-zh.png)
+![StarHarbor daily recommendations, Chinese interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-today.png)
+
+**Saved collection**
+
+![StarHarbor saved collection, Chinese interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-saved.png)
+
+**Recommendation settings**
+
+![StarHarbor recommendation settings, Chinese interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/793590a83348cd1286ff9249f0b47da3dc0c1c95/docs/images/market-settings.png)
 
 ## Install and get started
 
