@@ -1,5 +1,10 @@
 # Changelog / 更新记录
 
+## v0.4.6 — 2026-11-19
+
+- Keep the English brand name in the wordmark and use only 星港 for the heading below it in both READMEs.
+- 中英文 README 下方标题均仅保留「星港」，避免与上方字标中的 StarHarbor 重复。
+
 ## v0.4.5 — 2026-11-19
 
 - Redesign both README introductions with a centered brand wordmark, title, tagline, language links, badges, install links and a full-width product screenshot. Keep each language's three supplied screenshots and include the new wordmark in the npm package.

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.5/assets/readme-wordmark.png" alt="StarHarbor" width="480">
+<img src="https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.6/assets/readme-wordmark.png" alt="StarHarbor" width="480">
 
 <h1>星港</h1>
 
@@ -26,7 +26,7 @@
 
 </div>
 
-![StarHarbor daily recommendations, English interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.5/docs/images/market-today-en.png)
+![StarHarbor daily recommendations, English interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.6/docs/images/market-today-en.png)
 
 <p align="center"><em>Daily GitHub discoveries, with a Markdown collection you keep.</em></p>
 
@@ -46,11 +46,11 @@ The English daily board is shown above. Collection and Settings are shown below.
 
 **Saved collection**
 
-![StarHarbor saved collection, English interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.5/docs/images/market-saved-en.png)
+![StarHarbor saved collection, English interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.6/docs/images/market-saved-en.png)
 
 **Recommendation settings**
 
-![StarHarbor recommendation settings, English interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.5/docs/images/market-settings-en.png)
+![StarHarbor recommendation settings, English interface](https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.6/docs/images/market-settings-en.png)
 
 ## Install and get started
 
@@ -59,19 +59,19 @@ Requires DSH `>=0.2.2-rc.1 <0.3.0` and Node.js 22 or later. StarHarbor uses nati
 Install the prebuilt npm package:
 
 ```sh
-dsh plugin --profile <profile-name> add dsh-starharbor@0.4.5
+dsh plugin --profile <profile-name> add dsh-starharbor@0.4.6
 ```
 
 Or install from the pinned GitHub source:
 
 ```sh
-dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.4.5
+dsh plugin --profile <profile-name> add github:Richology/dsh-starharbor#v0.4.6
 ```
 
-Or download [dsh-starharbor-0.4.5.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.5/dsh-starharbor-0.4.5.tgz) from the [v0.4.5 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.5), then install the downloaded file:
+Or download [dsh-starharbor-0.4.6.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.6/dsh-starharbor-0.4.6.tgz) from the [v0.4.6 release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.6), then install the downloaded file:
 
 ```sh
-dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.4.5.tgz
+dsh plugin --profile <profile-name> add /absolute/path/to/dsh-starharbor-0.4.6.tgz
 ```
 
 Source: [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor). The [npm package](https://www.npmjs.com/package/dsh-starharbor) is published. The community catalog listing has been accepted; regional market clients may lag until their catalog source refreshes.

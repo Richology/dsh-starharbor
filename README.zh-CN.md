@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.5/assets/readme-wordmark.png" alt="StarHarbor 星港" width="480">
+<img src="https://raw.githubusercontent.com/Richology/dsh-starharbor/v0.4.6/assets/readme-wordmark.png" alt="StarHarbor 星港" width="480">
 
 <h1>星港</h1>
 
@@ -59,19 +59,19 @@ StarHarbor 星港是 DSH 的侧边栏插件，每天推荐 1–10 个公开 GitH
 通过 npm 安装预打包版本：
 
 ```sh
-dsh plugin --profile <你的配置名> add dsh-starharbor@0.4.5
+dsh plugin --profile <你的配置名> add dsh-starharbor@0.4.6
 ```
 
 也可以通过固定版本的 GitHub 源码安装：
 
 ```sh
-dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.4.5
+dsh plugin --profile <你的配置名> add github:Richology/dsh-starharbor#v0.4.6
 ```
 
-也可以从 [v0.4.5 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.5) 下载 [dsh-starharbor-0.4.5.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.5/dsh-starharbor-0.4.5.tgz)，再安装下载的文件：
+也可以从 [v0.4.6 Release](https://github.com/Richology/dsh-starharbor/releases/tag/v0.4.6) 下载 [dsh-starharbor-0.4.6.tgz](https://github.com/Richology/dsh-starharbor/releases/download/v0.4.6/dsh-starharbor-0.4.6.tgz)，再安装下载的文件：
 
 ```sh
-dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.4.5.tgz
+dsh plugin --profile <你的配置名> add /absolute/path/to/dsh-starharbor-0.4.6.tgz
 ```
 
 源码位于 [Richology/dsh-starharbor](https://github.com/Richology/dsh-starharbor)。[npm 包](https://www.npmjs.com/package/dsh-starharbor)已发布，社区目录也已收录；不同下载地区的市场客户端需等待各自目录源刷新。
